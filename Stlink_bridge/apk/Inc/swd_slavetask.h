@@ -14,9 +14,17 @@
 
 
 
+ typedef enum
+  {
+	 SWD_SLAVE_WAIT_FOR_START,
+	 SWD_SLAVE_WAIT_FOR_END
+
+ }SlaveStateTypeDef;
+
 
 /*function prototype ---------------*/
  void vSlaveswd_Task(void * argument);
+ void Swd_SlaveStateMachineShifter(void);
 
 
 #ifdef __cplusplus

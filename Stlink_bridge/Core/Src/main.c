@@ -59,8 +59,18 @@ int main(void)
   */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
+	 /*Falling Edge */
+	if (GPIO_Pin==SWD_SLAVE_CLK_Pin)
+	{
+
+		Swd_SlaveStateMachineShifter();
+
+	}
+
 
 }
+
+
 
 
 /**
@@ -155,7 +165,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : SWD_SLAVE_CLK_Pin */
   GPIO_InitStruct.Pin = SWD_SLAVE_CLK_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(SWD_SLAVE_CLK_GPIO_Port, &GPIO_InitStruct);
 
@@ -172,27 +182,6 @@ static void MX_GPIO_Init(void)
 
 }
 
-/* USER CODE BEGIN 4 */
-
-/* USER CODE END 4 */
-
-/* USER CODE BEGIN Header_StartDefaultTask */
-/**
-  * @brief  Function implementing the defaultTask thread.
-  * @param  argument: Not used
-  * @retval None
-  */
-/* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask(void const * argument)
-{
-  /* USER CODE BEGIN 5 */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END 5 */
-}
 
 /**
   * @brief  Period elapsed callback in non blocking mode
