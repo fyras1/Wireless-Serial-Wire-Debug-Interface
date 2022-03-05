@@ -193,4 +193,5 @@
 			<resource resourceType="PROJECT" workspacePath="/Stlink_bridge"/>
 		</configuration>
 	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 </cproject>

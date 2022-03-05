@@ -53,22 +53,7 @@ int main(void)
 
 
 
-/**
-  * @brief HAL_GPIO_EXTI_Callback
-  * @retval None
-  */
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
-{
-	 /*Falling Edge */
-	if (GPIO_Pin==SWD_SLAVE_CLK_Pin)
-	{
 
-		Swd_SlaveStateMachineShifter();
-
-	}
-
-
-}
 
 
 
@@ -202,6 +187,23 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   /* USER CODE BEGIN Callback 1 */
 
   /* USER CODE END Callback 1 */
+}
+
+/**
+  * @brief HAL_GPIO_EXTI_Callback
+  * @retval None
+  */
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	 /*Falling Edge */
+	if (GPIO_Pin==SWD_SLAVE_CLK_Pin)
+	{
+
+		Swd_SlaveStateMachineShifter();
+
+	}
+
+
 }
 
 /**

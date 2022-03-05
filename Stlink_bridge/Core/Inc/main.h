@@ -67,7 +67,7 @@ void Error_Handler(void);
 #define LED_GREEN_GPIO_Port GPIOB
 #define SWD_SLAVE_DATA_Pin GPIO_PIN_9
 #define SWD_SLAVE_DATA_GPIO_Port GPIOE
-#define SWD_SLAVE_CLK_Pin GPIO_PIN_10
+#define SWD_SLAVE_CLK_Pin GPIO_PIN_11
 #define SWD_SLAVE_CLK_GPIO_Port GPIOE
 #define SWD_SLAVE_CLK_EXTI_IRQn EXTI15_10_IRQn
 #define LED_RED_Pin GPIO_PIN_14
