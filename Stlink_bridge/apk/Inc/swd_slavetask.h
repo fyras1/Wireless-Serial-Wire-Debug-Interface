@@ -32,10 +32,30 @@
  }SlaveStateTypeDef;
 
 
+
+
+
+typedef struct request{
+	uint8_t Start;
+	uint8_t APnDP;
+	uint8_t RnW;
+	uint8_t A2;
+	uint8_t A3;
+	uint8_t Parity;
+	uint8_t Stop;
+	uint8_t Park;
+
+} RequestTypeDef;
+
+
 /*function prototype ---------------*/
  void vSlaveswd_Task(void * argument);
- void Swd_SlaveStateMachineShifter(void);
- SlaveStateTypeDef unexpected_error_handler(SlaveStateTypeDef State);
+ void Swd_SlaveStateMachineShifter();
+  SlaveStateTypeDef unexpected_error_handler(SlaveStateTypeDef State);
+   void requestParser(uint8_t rq, RequestTypeDef* request);
+  void changeEdgeTrigger(uint8_t newEdge);
+  SlaveStateTypeDef switchAndSkipEdge(uint8_t newEdge,SlaveStateTypeDef sourceState, SlaveStateTypeDef targetState);
+
 
 
 
