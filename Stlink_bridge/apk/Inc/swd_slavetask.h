@@ -18,7 +18,7 @@
   {
 	 SWD_SLAVE_WAIT_FOR_START,
 	 SWD_LINE_RESET_1,
-	 JTAG_TO_SWD_SWITCH,
+	 SWD_JTAG_SELECT,
 	 SWD_LINE_RESET_2,
 	 SWD_WAIT_FOR_REQUEST,
 	 SWD_REQUEST,
@@ -54,7 +54,7 @@ typedef struct request{
   SlaveStateTypeDef unexpected_error_handler(SlaveStateTypeDef State);
    void requestParser(uint8_t rq, RequestTypeDef* request);
   void changeEdgeTrigger(uint8_t newEdge);
-  SlaveStateTypeDef switchAndSkipEdge(uint8_t newEdge,SlaveStateTypeDef sourceState, SlaveStateTypeDef targetState);
+   SlaveStateTypeDef SwitchToRisingAndSkipEdge(uint8_t newEdge,SlaveStateTypeDef sourceState, SlaveStateTypeDef targetState);
 
 
 

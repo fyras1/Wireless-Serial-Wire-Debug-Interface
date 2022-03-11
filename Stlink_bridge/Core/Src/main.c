@@ -33,6 +33,8 @@ int main(void)
   HAL_Init();
 
 
+  SCB_EnableICache();
+
 
   /* Configure the system clock */
   SystemClock_Config();
@@ -170,7 +172,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 5, 0);
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0); //  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
 }
@@ -207,7 +209,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	if (GPIO_Pin==SWD_SLAVE_CLK_Pin)
 	{
 
-		Swd_SlaveStateMachineShifter();
+
 
 
 	}
