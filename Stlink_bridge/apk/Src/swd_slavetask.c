@@ -87,6 +87,8 @@ uint8_t SWDorJTAG = 0;
 uint8_t requestBitCounter = 0;
 uint8_t pinState;
 
+uint8_t retAckWait=0;
+
 RequestTypeDef request;
 
 //for debug
@@ -111,6 +113,29 @@ void Swd_SlaveStateMachineShifter(void)
 
 	switch (State)
 	{
+
+		case SWD_SELF_ACK_WAIT:
+		{
+
+			GPIOE->MODER|=(1<<18);
+
+			switch(retAckWait)
+			{
+			case 2:   {GPIOE -> ODR |= SWD_SLAVE_DATA_Pin; break;}
+			default: { GPIOE -> ODR &= ~SWD_SLAVE_DATA_Pin; break;}
+
+
+			}
+			GPIOE->MODER|=(1<<18);
+			changeEdgeTrigger(FALLING);
+			GPIOE->MODER&= ~(1<<18);
+
+			State = SWD_ACKNOWLEDGE;
+
+
+			break;
+		}
+
 		case SWD_SLAVE_WAIT_FOR_START:
 			{
 				//wait for first bit to start line reset
@@ -232,7 +257,7 @@ void Swd_SlaveStateMachineShifter(void)
 						requestBitCounter = 0;
 
 						//State = SWD_TURNAROUND_RQ_ACK;
-
+						retAckWait=1;
 						State= SWD_SELF_ACK_WAIT;
 					}
 				}
@@ -246,8 +271,16 @@ void Swd_SlaveStateMachineShifter(void)
 				// add new acknowledge bits to ack
 				ack = (ack << 1) | pinState;
 				ackCounter++;
-				if (ackCounter == 3)
-				{
+
+				if (ackCounter<3){
+					changeEdgeTrigger(RISING);
+					retAckWait++;
+					State=SWD_SELF_ACK_WAIT;
+				}
+
+
+				else if (ackCounter == 3)
+				{ retAckWait=0;
 					// ackBuffer[ackBufferCounter++]=ack;	// for DEBUG
 					switch (ack)
 					{
