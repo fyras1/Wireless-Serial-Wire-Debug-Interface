@@ -22,7 +22,7 @@
  *@retval None
  *
  */
-void vSlaveswd_Task(void *argument)
+void vSlaveswd_Task(void *argumen0t)
 {
 	while (1)
 	{
@@ -90,7 +90,7 @@ uint8_t pinState;
 RequestTypeDef request;
 
 //for debug
-/*
+
 SlaveStateTypeDef StateBuffer[1000];
 uint32_t dataBuffer[1000];
 uint8_t ackBuffer[1000];
@@ -103,7 +103,7 @@ uint32_t requestBufferCounter = 0;
 
 SlaveStateTypeDef oldState = SWD_SLAVE_WAIT_FOR_START;
 
-*/
+
 
 void Swd_SlaveStateMachineShifter(void)
 {
@@ -230,7 +230,10 @@ void Swd_SlaveStateMachineShifter(void)
 						requestParser(rq, &request);	// parse the bits of rq
 						rq = 0;
 						requestBitCounter = 0;
-						State = SWD_TURNAROUND_RQ_ACK;
+
+						//State = SWD_TURNAROUND_RQ_ACK;
+
+						State= SWD_SELF_ACK_WAIT;
 					}
 				}
 
@@ -352,16 +355,13 @@ void Swd_SlaveStateMachineShifter(void)
 			}
 	}
 
-	/*
-    *
-    *FOR DEBUG
-    *
-    *if (State != oldState) {
+
+    if (State != oldState) {
       StateBuffer[stateBufferCounter++]=State;
       oldState = State;
    }
 
-*/
+
 
 	//SetEventFlag(xFlagSlave,RX_DATA_READY, 1U)
 
