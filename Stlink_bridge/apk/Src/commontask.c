@@ -55,12 +55,12 @@ void vCommontask_StartApk(void )
 		GlobalError(TASK_CREATION_FAIL_);
 	}
 
-	   xReturned = xTaskCreate(vMasterswd_Task,"MASTER",200U ,NULL,(tskIDLE_PRIORITY+4U), &swMaster_TaskHandle );
+   xReturned = xTaskCreate(vMasterswd_Task,"MASTER",200U ,NULL,(tskIDLE_PRIORITY+4U), &swMaster_TaskHandle );
 
-		if (xReturned!=pdPASS )
-		{
-			GlobalError(TASK_CREATION_FAIL_);
-		}
+	if (xReturned!=pdPASS )
+	{
+		GlobalError(TASK_CREATION_FAIL_);
+	}
 
 
 

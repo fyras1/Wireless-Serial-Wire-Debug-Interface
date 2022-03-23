@@ -25,17 +25,32 @@
 */
 void vMasterswd_Task(void * argument)
 {
+
+
+	uint32_t master_notif;
 	while(1)
 	{
+
+
+
+
+				xTaskNotifyWait(0, 0xffffffff, &master_notif, portMAX_DELAY);
+
+
+
+
+				HAL_GPIO_WritePin(GPIOF, GPIO_PIN_12, 1);
+				HAL_GPIO_WritePin(GPIOF, GPIO_PIN_12, 0);
+
 		/*Increment TaskTick*/
 		h_global.TaskTick.Swd_Master++;
 
 
 
-		osDelay(200);
-
+		//osDelay(200);
 
 	}
+
 
 
 
