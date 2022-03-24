@@ -21,6 +21,9 @@ QueueHandle_t xQueueSlave;
 
 globalHandlerTypeDef  h_global;
 
+
+notificationStruct slaveNotif,masterNotif;
+
 static void InitHandler(void);
 
 /** @defgroup CommonTsk COMMON START TASK

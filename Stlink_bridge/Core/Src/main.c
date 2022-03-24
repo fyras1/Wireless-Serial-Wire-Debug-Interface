@@ -45,10 +45,15 @@ int main(void)
 
 
   /* Run the apk */
+	HAL_GPIO_WritePin(GPIOF, GPIO_PIN_12, 1);
+
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, 1);
+
   vCommontask_StartApk();
 
   while (1)
   {
+
   }
   /* USER CODE END 3 */
 }
@@ -130,7 +135,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOB, LED_GREEN_Pin|LED_RED_Pin|LED_BLUE_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOD, SWD_MASTER_CLk_Pin|SWD_MASTER_DATA_Pin, GPIO_PIN_RESET);
+  //HAL_GPIO_WritePin(GPIOD, SWD_MASTER_CLk_Pin|SWD_MASTER_DATA_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : PC13 */
   GPIO_InitStruct.Pin = GPIO_PIN_13;
@@ -162,7 +167,7 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+  HAL_GPIO_Init(SWD_MASTER_DATA_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : EXTI_IN_AND_OUT_ANALYSER_OUTPUT */
   GPIO_InitStruct.Pin = GPIO_PIN_13|GPIO_PIN_12;

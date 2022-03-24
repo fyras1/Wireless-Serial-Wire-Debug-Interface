@@ -15,7 +15,7 @@
 
 
  typedef enum
-  {
+  {  //SWD_SELF_ACK_WAIT,
 	 SWD_SLAVE_WAIT_FOR_START,
 	 SWD_LINE_RESET_1,
 	 SWD_JTAG_SELECT,
@@ -27,8 +27,8 @@
 	 SWD_TURNAROUND_ACK_RQ,
 	 SWD_TURNAROUND_ACK_DAT,
 	 SWD_DATA_TRANSFER,
-	 SWD_TURNAROUND_DAT_RQ,
-	 SWD_SELF_ACK_WAIT
+	 SWD_TURNAROUND_DAT_RQ
+
 
  }SlaveStateTypeDef;
 
@@ -50,12 +50,15 @@ typedef struct request{
 
 
 /*function prototype ---------------*/
- void vSlaveswd_Task(void * argument);
- void Swd_SlaveStateMachineShifter();
-  SlaveStateTypeDef unexpected_error_handler(SlaveStateTypeDef State);
-   void requestParser(uint8_t rq, RequestTypeDef* request);
-  void changeEdgeTrigger(uint8_t newEdge);
-   SlaveStateTypeDef SwitchToRisingAndSkipEdge(uint8_t newEdge,SlaveStateTypeDef sourceState, SlaveStateTypeDef targetState);
+
+void vSlaveswd_Task(void * argument);
+void Swd_SlaveStateMachineShifter();
+SlaveStateTypeDef unexpected_error_handler(SlaveStateTypeDef State);
+void requestParser(uint8_t rq, RequestTypeDef* request);
+void changeEdgeTrigger(uint8_t newEdge);
+SlaveStateTypeDef SwitchToRisingAndSkipEdge(uint8_t newEdge,SlaveStateTypeDef sourceState, SlaveStateTypeDef targetState);
+
+void sendNotif(uint8_t val , notifTypeTypedef notifType, TaskHandle_t swSlave_TaskHandle );
 
 
 

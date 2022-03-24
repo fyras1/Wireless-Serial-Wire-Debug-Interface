@@ -22,6 +22,23 @@
  extern TaskHandle_t swSlave_TaskHandle;
 
 
+
+ typedef enum {
+	 REQUEST,
+	 ACK,
+	 DATA,
+	 LINE_RESET_FULL
+ }notifTypeTypedef;
+
+ typedef struct ns{
+	 notifTypeTypedef type;
+	 uint32_t value;
+ } notificationStruct;
+
+ extern notificationStruct slaveNotif,masterNotif;
+
+
+
  typedef enum  {ICARE_NOTDEF_SW=00U,
  	            ICARE_DEBUG_SW=0xA5U,
  	           ICARE_RELEASE_SW =0x5AU}swCfgTypeDef;

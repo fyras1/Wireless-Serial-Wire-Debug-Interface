@@ -24,20 +24,42 @@
  */
 void vSlaveswd_Task(void *argumen0t)
 {
+	notificationStruct notif;
 
-	uint32_t slave_notif;
 	while (1)
 	{
 
-		xTaskNotifyWait(0, 0xffffffff, &slave_notif, portMAX_DELAY);
+		xTaskNotifyWait(0, 0xffffffff, NULL, portMAX_DELAY);
 
+		notif=slaveNotif;
 
+		switch(notif.type){
+			case REQUEST:
+			{
+			 break;
+			}
 
+			case ACK:
+			{
+				break;
+			}
+
+			case DATA:
+			{
+				break;
+			}
+
+			case LINE_RESET_FULL:
+			{
+				break;
+			}
+		}
 
 		HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 1);
 	    HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 0);
 
-		xTaskNotify(swMaster_TaskHandle,slave_notif,eSetValueWithOverwrite);
+	    masterNotif=notif;
+		xTaskNotify(swMaster_TaskHandle,NULL,eNoAction);
 
 
 
@@ -102,6 +124,7 @@ uint8_t dataParity = 0;
 uint8_t SWDorJTAG = 0;
 uint8_t requestBitCounter = 0;
 uint8_t pinState;
+
 
 uint8_t retAckWait=0;
 
@@ -215,16 +238,14 @@ void Swd_SlaveStateMachineShifter(void)
 					nbBitsRst2++;
 				else if (pinState == 0)
 				{
-					if (SWDorJTAG == SWD && nbBitsRst2 >= 50)
+					if ((SWDorJTAG == SWD && nbBitsRst2 >= 50) || (SWDorJTAG == JTAG && nbBitsRst2 >= 5))
 					{
 						State = SWD_WAIT_FOR_REQUEST;
 						nbBitsRst2 = 0;
+						sendNotif(0, LINE_RESET_FULL, swSlave_TaskHandle);
+
 					}
-					else if (SWDorJTAG == JTAG && nbBitsRst2 >= 5)
-					{
-						State = SWD_WAIT_FOR_REQUEST;
-						nbBitsRst2 = 0;
-					}
+
 					else
 						State = unexpected_error_handler(SWD_LINE_RESET_2);
 				}
@@ -251,6 +272,10 @@ void Swd_SlaveStateMachineShifter(void)
 		case SWD_REQUEST:
 			{
 				//add new bit to rq
+
+				if(!requestBitCounter)
+					rq=0;
+
 				rq = (rq << 1) | pinState;
 				requestBitCounter++;
 
@@ -275,20 +300,10 @@ void Swd_SlaveStateMachineShifter(void)
 						retAckWait=1;
 						State = SWD_TURNAROUND_RQ_ACK;
 						requestBitCounter = 0;
-						uint32_t notif=rq; //xxxxxx01 notif = request
-						rq = 0;
 
-						BaseType_t xHigherPriorityTaskWoken;
-						xHigherPriorityTaskWoken=pdFALSE;
-
-						xTaskNotifyFromISR(swSlave_TaskHandle,notif,eSetValueWithOverwrite,&xHigherPriorityTaskWoken);
+					   sendNotif( rq ,  REQUEST,  swSlave_TaskHandle );
 
 
-
-						//State= SWD_SELF_ACK_WAIT;
-
-
-						portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
 					}
 				}
 
@@ -518,6 +533,22 @@ inline SlaveStateTypeDef SwitchToRisingAndSkipEdge(uint8_t newEdge, SlaveStateTy
 		turnAroundSkipCounter = 0;
 		return targetState;
 	}
+}
+
+
+inline void sendNotif(uint8_t val , notifTypeTypedef notifType, TaskHandle_t swSlave_TaskHandle ) {
+
+			slaveNotif.value=val;
+			slaveNotif.type = notifType;
+			val = 0;
+
+			BaseType_t xHigherPriorityTaskWoken;
+			xHigherPriorityTaskWoken=pdFALSE;
+
+			xTaskNotifyFromISR(swSlave_TaskHandle,NULL,eNoAction,&xHigherPriorityTaskWoken);
+
+
+			portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
 }
 
 /**

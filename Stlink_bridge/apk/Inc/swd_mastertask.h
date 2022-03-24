@@ -17,6 +17,8 @@
 
 /*function prototype ---------------*/
  void vMasterswd_Task(void * argument);
+ void printRequest(uint32_t rq);
+ void printReset(void);
 
 
 #ifdef __cplusplus
