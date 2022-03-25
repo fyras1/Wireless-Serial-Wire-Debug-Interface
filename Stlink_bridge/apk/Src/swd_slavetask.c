@@ -59,7 +59,7 @@ void vSlaveswd_Task(void *argumen0t)
 	    HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 0);
 
 	    masterNotif=notif;
-		xTaskNotify(swMaster_TaskHandle,NULL,eNoAction);
+		xTaskNotify(swMaster_TaskHandle,0,eNoAction);
 
 
 
@@ -545,7 +545,7 @@ inline void sendNotif(uint8_t val , notifTypeTypedef notifType, TaskHandle_t swS
 			BaseType_t xHigherPriorityTaskWoken;
 			xHigherPriorityTaskWoken=pdFALSE;
 
-			xTaskNotifyFromISR(swSlave_TaskHandle,NULL,eNoAction,&xHigherPriorityTaskWoken);
+			xTaskNotifyFromISR(swSlave_TaskHandle,0,eNoAction,&xHigherPriorityTaskWoken);
 
 
 			portYIELD_FROM_ISR( xHigherPriorityTaskWoken );

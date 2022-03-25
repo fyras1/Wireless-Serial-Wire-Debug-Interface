@@ -34,10 +34,11 @@ void vMasterswd_Task(void * argument)
 	while(1)
 	{
 
-				HAL_GPIO_WritePin(GPIOF, GPIO_PIN_12, 1);
-				HAL_GPIO_WritePin(GPIOF, GPIO_PIN_12, 0);
+
+
 
 				xTaskNotifyWait(0, 0xffffffff, NULL, portMAX_DELAY);
+				HAL_GPIO_WritePin(GPIOF, GPIO_PIN_12, 1);
 				notif=masterNotif;
 
 				switch(notif.type){
@@ -74,6 +75,7 @@ void vMasterswd_Task(void * argument)
 
 
 		//osDelay(200);
+		HAL_GPIO_WritePin(GPIOF, GPIO_PIN_12, 0);
 
 	}
 
@@ -92,14 +94,56 @@ inline void printRequest(uint32_t rq)
 	for (int i=7;i>=0;i--)
 	{
 
+
+		GPIOD->ODR = ((GPIOD->ODR & ~(SWD_MASTER_DATA_Pin)) | ( ((rq>>i)&0x01) << 13)); // equivalent to :
+		//HAL_GPIO_WritePin(GPIOD, SWD_MASTER_DATA_Pin, (rq>>i)&0x01 );
+
+		GPIOD->ODR|=SWD_MASTER_CLk_Pin; // 1
+
+
+
+		GPIOD->ODR&=~SWD_MASTER_CLk_Pin; // 0
+
+
+
 		//MANUAL FALLING EDGE
 		// note to self: chagne to GPIOD->ODR later
-		HAL_GPIO_WritePin(GPIOD, SWD_MASTER_CLk_Pin, 1);
 
+		/*HAL_GPIO_WritePin(GPIOD, SWD_MASTER_CLk_Pin, 1);
 		HAL_GPIO_WritePin(GPIOD, SWD_MASTER_DATA_Pin, (rq>>i)&0x01 );
 
-		HAL_GPIO_WritePin(GPIOD, SWD_MASTER_CLk_Pin, 0);
+		HAL_GPIO_WritePin(GPIOD, SWD_MASTER_CLk_Pin, 0);*/
 	}
+
+
+	/*turnarund*/
+
+	HAL_GPIO_WritePin(GPIOD, SWD_MASTER_DATA_Pin, 0); //
+
+
+	GPIOD->MODER&= ~(1<<26); // DATA PIN INPUT MODE
+
+	GPIOD->ODR|=SWD_MASTER_CLk_Pin; // 1
+	GPIOD->ODR&=~SWD_MASTER_CLk_Pin; // 0
+
+
+
+	/* 3 edges ACK*/
+	GPIOD->ODR|=SWD_MASTER_CLk_Pin; // 1
+	GPIOD->ODR&=~SWD_MASTER_CLk_Pin; // 0
+
+	GPIOD->ODR|=SWD_MASTER_CLk_Pin; // 1
+	GPIOD->ODR&=~SWD_MASTER_CLk_Pin; // 0
+
+	GPIOD->ODR|=SWD_MASTER_CLk_Pin; // 1
+	GPIOD->ODR&=~SWD_MASTER_CLk_Pin; // 0
+
+	GPIOD->MODER|=(1<<26); // DATA PIN OUTPUT MODE
+
+
+
+	//HAL_GPIO_WritePin(GPIOD, SWD_MASTER_CLk_Pin, 1);
+
 }
 
 
@@ -130,9 +174,8 @@ inline void printReset(void)
 
 			//MANUAL FALLING EDGE
 			// note to self: chagne to GPIOD->ODR later
+		HAL_GPIO_WritePin(GPIOD, SWD_MASTER_DATA_Pin, (SWD_Select_Seq>>i)&0x01 );
 			HAL_GPIO_WritePin(GPIOD, SWD_MASTER_CLk_Pin, 1);
-
-			HAL_GPIO_WritePin(GPIOD, SWD_MASTER_DATA_Pin, (SWD_Select_Seq>>i)&0x01 );
 
 			HAL_GPIO_WritePin(GPIOD, SWD_MASTER_CLk_Pin, 0);
 		}
@@ -169,20 +212,10 @@ inline void printReset(void)
 
 			}
 
+	//HAL_GPIO_WritePin(GPIOD, SWD_MASTER_DATA_Pin,1 );
 
 
-
-	HAL_GPIO_WritePin(GPIOD, SWD_MASTER_CLk_Pin, 1);
-
-
-
-
-
-
-
-
-
-
+	//HAL_GPIO_WritePin(GPIOD, SWD_MASTER_CLk_Pin, 1);
 
 
 
