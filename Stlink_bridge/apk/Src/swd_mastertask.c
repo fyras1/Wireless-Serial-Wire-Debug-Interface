@@ -94,15 +94,18 @@ inline void printRequest(uint32_t rq)
 	for (int i=7;i>=0;i--)
 	{
 
-
-		GPIOD->ODR = ((GPIOD->ODR & ~(SWD_MASTER_DATA_Pin)) | ( ((rq>>i)&0x01) << 13)); // equivalent to :
-		//HAL_GPIO_WritePin(GPIOD, SWD_MASTER_DATA_Pin, (rq>>i)&0x01 );
-
-		GPIOD->ODR|=SWD_MASTER_CLk_Pin; // 1
+		swdio_output(  (rq>>i)&0x01  );
+		swclk_cycle();
 
 
-
-		GPIOD->ODR&=~SWD_MASTER_CLk_Pin; // 0
+//		GPIOD->ODR = ((GPIOD->ODR & ~(SWD_MASTER_DATA_Pin)) | ( ((rq>>i)&0x01) << 13)); // equivalent to :
+//		//HAL_GPIO_WritePin(GPIOD, SWD_MASTER_DATA_Pin, (rq>>i)&0x01 );
+//
+//		GPIOD->ODR|=SWD_MASTER_CLk_Pin; // 1
+//
+//
+//
+//		GPIOD->ODR&=~SWD_MASTER_CLk_Pin; // 0
 
 
 
@@ -123,20 +126,25 @@ inline void printRequest(uint32_t rq)
 
 	GPIOD->MODER&= ~(1<<26); // DATA PIN INPUT MODE
 
-	GPIOD->ODR|=SWD_MASTER_CLk_Pin; // 1
-	GPIOD->ODR&=~SWD_MASTER_CLk_Pin; // 0
+//	GPIOD->ODR|=SWD_MASTER_CLk_Pin; // 1
+//	GPIOD->ODR&=~SWD_MASTER_CLk_Pin; // 0
+//
+//
+//
+//	/* 3 edges ACK*/
+//	GPIOD->ODR|=SWD_MASTER_CLk_Pin; // 1
+//	GPIOD->ODR&=~SWD_MASTER_CLk_Pin; // 0
+//
+//	GPIOD->ODR|=SWD_MASTER_CLk_Pin; // 1
+//	GPIOD->ODR&=~SWD_MASTER_CLk_Pin; // 0
+//
+//	GPIOD->ODR|=SWD_MASTER_CLk_Pin; // 1
+//	GPIOD->ODR&=~SWD_MASTER_CLk_Pin; // 0
 
-
-
-	/* 3 edges ACK*/
-	GPIOD->ODR|=SWD_MASTER_CLk_Pin; // 1
-	GPIOD->ODR&=~SWD_MASTER_CLk_Pin; // 0
-
-	GPIOD->ODR|=SWD_MASTER_CLk_Pin; // 1
-	GPIOD->ODR&=~SWD_MASTER_CLk_Pin; // 0
-
-	GPIOD->ODR|=SWD_MASTER_CLk_Pin; // 1
-	GPIOD->ODR&=~SWD_MASTER_CLk_Pin; // 0
+	swclk_cycle();
+	swclk_cycle();
+	swclk_cycle();
+	swclk_cycle();
 
 	GPIOD->MODER|=(1<<26); // DATA PIN OUTPUT MODE
 
@@ -221,6 +229,47 @@ inline void printReset(void)
 
 
 }
+
+/*Enable SWDIO pin (PD13) as INPUT*/
+inline void swdio_mode_input(){
+	GPIOD->MODER&= ~(1<<26); // DATA PIN INPUT MODE
+
+}
+
+/*Enable SWDIO pin (PD13) as OUTOUT*/
+inline void swdio_mode_output(){
+	GPIOD->MODER|= (1<<26); // DATA PIN OuTPUT MODE
+
+}
+
+/*Reset SWCLK pin (PD12) to 0*/
+inline void swclk_reset(){
+	GPIOD->ODR&=~SWD_MASTER_CLk_Pin; // 0
+}
+
+/*Set SWCLK pin (PD12) to 1*/
+
+inline void swclk_set(){
+	GPIOD->ODR|=SWD_MASTER_CLk_Pin; // 1
+}
+
+/*Reset and Set the SWCLK pin (PD12)*/
+inline void swclk_cycle(){
+
+	// the order set and reset of the cycle can be inversed later
+
+	swclk_set();
+	swclk_reset();
+
+}
+
+inline void swdio_output(uint8_t bit)
+{
+	GPIOD->ODR = ((GPIOD->ODR & ~(SWD_MASTER_DATA_Pin)) | ( (bit) << 13)); // equivalent to :
+	//HAL_GPIO_WritePin(GPIOD, SWD_MASTER_DATA_Pin, bit );
+
+}
+
 
 /**
  * @}

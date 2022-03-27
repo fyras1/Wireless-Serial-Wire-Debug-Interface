@@ -20,6 +20,14 @@
  void printRequest(uint32_t rq);
  void printReset(void);
 
+ void swclk_reset(void);
+ void swclk_set(void);
+ void swclk_cycle(void);
+ void swdio_output(uint8_t bit);
+ void swdio_mode_input(void);
+ void swdio_mode_output(void);
+
+
 
 #ifdef __cplusplus
 }
