@@ -23,9 +23,15 @@
  void swclk_reset(void);
  void swclk_set(void);
  void swclk_cycle(void);
- void swdio_output(uint8_t bit);
+ void swdio_Write(uint8_t bit);
+ void swdio_Read();
  void swdio_mode_input(void);
  void swdio_mode_output(void);
+
+  void readAck(void);
+  void readData(void);
+
+
 
 
 

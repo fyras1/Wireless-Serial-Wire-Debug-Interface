@@ -46,9 +46,7 @@ int main(void)
 
 
   /* Run the apk */
-	HAL_GPIO_WritePin(GPIOF, GPIO_PIN_12, 1);
 
-	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, 1);
 
   vCommontask_StartApk();
 

@@ -26,7 +26,8 @@
  typedef enum {
 	 REQUEST,
 	 ACK,
-	 DATA,
+	 DATA_FROM_MASTER,
+	 DATA_FROM_ISR,
 	 LINE_RESET_FULL
  }notifTypeTypedef;
 

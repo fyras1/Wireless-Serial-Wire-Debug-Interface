@@ -22,6 +22,9 @@
  *@retval None
  *
  */
+
+uint8_t dataReceived=0;
+
 void vSlaveswd_Task(void *argumen0t)
 {
 	notificationStruct notif;
@@ -30,12 +33,14 @@ void vSlaveswd_Task(void *argumen0t)
 	{
 
 		xTaskNotifyWait(0, 0xffffffff, NULL, portMAX_DELAY);
-
+		HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 1);
 		notif=slaveNotif;
 
 		switch(notif.type){
 			case REQUEST:
 			{
+			    masterNotif=notif;
+				xTaskNotify(swMaster_TaskHandle,0,eNoAction);
 			 break;
 			}
 
@@ -44,29 +49,38 @@ void vSlaveswd_Task(void *argumen0t)
 				break;
 			}
 
-			case DATA:
+			case DATA_FROM_ISR:
 			{
+			    masterNotif=notif;
+				xTaskNotify(swMaster_TaskHandle,0,eNoAction);
+				break;
+			}
+
+			case DATA_FROM_MASTER:
+			{
+				dataReceived=1;
 				break;
 			}
 
 			case LINE_RESET_FULL:
 			{
+			    masterNotif=notif;
+				xTaskNotify(swMaster_TaskHandle,0,eNoAction);
 				break;
 			}
 		}
 
-		HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 1);
-	    HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 0);
 
-	    masterNotif=notif;
-		xTaskNotify(swMaster_TaskHandle,0,eNoAction);
+
+
+
 
 
 
 
 		/*Increment TaskTick*/
 		h_global.TaskTick.Swd_Slave++;
-
+	    HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 0);
 		//osDelay(200);
 
 	}
@@ -125,8 +139,12 @@ uint8_t SWDorJTAG = 0;
 uint8_t requestBitCounter = 0;
 uint8_t pinState;
 
+uint8_t data_parity=0;
 
 uint8_t retAckWait=0;
+uint8_t retAckOk=0;
+
+
 
 RequestTypeDef request;
 
@@ -296,13 +314,20 @@ void Swd_SlaveStateMachineShifter(void)
 						requestParser(rq, &request);	// parse the bits of rq
 
 
-
-						retAckWait=1;
-						State = SWD_TURNAROUND_RQ_ACK;
+							State = SWD_TURNAROUND_RQ_ACK;
 						requestBitCounter = 0;
 
-					   sendNotif( rq ,  REQUEST,  swSlave_TaskHandle );
-
+					 if (request.RnW == READ){
+						if (dataReceived==1)
+							retAckOk=1;
+						else{
+							retAckWait=1;
+							sendNotif( rq ,  REQUEST,  swSlave_TaskHandle );
+						}
+					 }
+					 else if (request.RnW == WRITE){
+						 retAckOk=1;
+					 }
 
 					}
 				}
@@ -313,15 +338,28 @@ void Swd_SlaveStateMachineShifter(void)
 		case SWD_ACKNOWLEDGE:
 			{
 
-				GPIOE->MODER|=(1<<18); //output mode
 
-							switch(retAckWait)
+				if (retAckWait) //inside ack wait (return ack wait)
 							{
-							case 2:   {GPIOE -> ODR |= SWD_SLAVE_DATA_Pin; break;}
-							default: { GPIOE -> ODR &= ~SWD_SLAVE_DATA_Pin; break;}
-
-
+							switch(retAckWait) //0 -> 1 -> 0
+								{
+								case 2:   {GPIOE -> ODR |= SWD_SLAVE_DATA_Pin; break;}
+								default: { GPIOE -> ODR &= ~SWD_SLAVE_DATA_Pin; break;}
+								}
 							}
+				else
+							{
+							switch(retAckOk) //1 -> 0 -> 0
+								{
+								case 1:   {GPIOE -> ODR |= SWD_SLAVE_DATA_Pin; break;}
+								default: { GPIOE -> ODR &= ~SWD_SLAVE_DATA_Pin; break;}
+								}
+							}
+
+
+
+
+
 
 							//changeEdgeTrigger(FALLING);
 
@@ -338,13 +376,19 @@ void Swd_SlaveStateMachineShifter(void)
 
 
 					//changeEdgeTrigger(RISING);
-					retAckWait++;
+
+					(retAckWait!=0)?retAckWait++:retAckOk++; // only increase the variable that wasn't initially 0 ( has 1 from SWD_REQUEST)
+
+//					retAckWait+=(1*retAckWait);
+//					retAckOk+=(1*retAckOk);
 
 				}
 
 
 				else if (ackCounter == 3)
-				{ retAckWait=0;
+				{
+					retAckWait=0;
+					retAckOk=0;
 					// ackBuffer[ackBufferCounter++]=ack;	// for DEBUG
 					switch (ack)
 					{
@@ -390,11 +434,33 @@ void Swd_SlaveStateMachineShifter(void)
 
 		case SWD_DATA_TRANSFER:
 			{
-
-				if (dataCounter == 32)
+				//data pin already in output mode from rq_ack_turnaournd
+				/*condition is entered in case we have data from master (read request)*/
+				if (dataReceived)
 				{
-					//dataBuffer[dataBufferCounter++]=data;
+					uint8_t bit = (slaveNotif.value>>(31-dataCounter))&0x01;
+					GPIOE->ODR = ((GPIOE->ODR & ~(SWD_SLAVE_DATA_Pin)) | ( (bit) << 9)); //write bit to swdio
+
+					dataParity^=bit;
+
+					if (dataCounter==31) //we wrote the last bit of the data response
+						dataReceived=0;
+
+				}
+				/******/
+
+				if (dataCounter == 32) //this condition is for reading the parity and for preparing the enxt state
+				{
+
+					if (dataReceived)
+					{
+						dataReceived=0;
+						GPIOE->ODR = ((GPIOE->ODR & ~(SWD_SLAVE_DATA_Pin)) | ( (dataParity) << 9));
+					}
+					else
 					dataParity = pinState;
+
+
 					if (request.RnW == READ)
 						State = SWD_TURNAROUND_DAT_RQ;
 					else
@@ -405,6 +471,7 @@ void Swd_SlaveStateMachineShifter(void)
 				}
 				else
 				{
+					pinState = (GPIOE->IDR &0x0200) >> 9;
 					data = (data << 1) | pinState;
 					dataCounter++;
 
@@ -416,7 +483,7 @@ void Swd_SlaveStateMachineShifter(void)
 
 		case SWD_TURNAROUND_RQ_ACK:	// Switch trigger on next rising edge to FALLING
 			{
-
+				GPIOE->MODER|=(1<<18); //output mode
 				changeEdgeTrigger(FALLING);
 				State = SWD_ACKNOWLEDGE;
 
@@ -426,6 +493,8 @@ void Swd_SlaveStateMachineShifter(void)
 
 		case SWD_TURNAROUND_DAT_RQ:	// if  READ request : Switch trigger and skip next RISING edge
 			{
+				GPIOE->MODER&= ~(1<<18); // DATA PIN INPUT MODE
+
 
 				State = SwitchToRisingAndSkipEdge(RISING, SWD_TURNAROUND_DAT_RQ, SWD_REQUEST); // chang
 
