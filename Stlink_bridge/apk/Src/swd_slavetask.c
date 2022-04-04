@@ -36,6 +36,8 @@ void vSlaveswd_Task(void *argumen0t)
 		HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 1);
 		notif=slaveNotif;
 
+
+
 		switch(notif.type){
 			case REQUEST:
 			{
@@ -143,6 +145,10 @@ uint8_t data_parity=0;
 
 uint8_t retAckWait=0;
 uint8_t retAckOk=0;
+
+uint8_t saveData=0;
+
+uint8_t requestPending=0;
 
 
 
@@ -260,7 +266,7 @@ void Swd_SlaveStateMachineShifter(void)
 					{
 						State = SWD_WAIT_FOR_REQUEST;
 						nbBitsRst2 = 0;
-						sendNotif(0, LINE_RESET_FULL, swSlave_TaskHandle);
+						sendNotif(LINE_RESET_FULL,0,0 , swSlave_TaskHandle);
 
 					}
 
@@ -318,15 +324,26 @@ void Swd_SlaveStateMachineShifter(void)
 						requestBitCounter = 0;
 
 					 if (request.RnW == READ){
-						if (dataReceived==1)
-							retAckOk=1;
+						if (dataReceived==1){
+							requestPending=0;
+							retAckOk=1; // when data returned from master , write it on swdio to st-link
+						}
 						else{
-							retAckWait=1;
-							sendNotif( rq ,  REQUEST,  swSlave_TaskHandle );
+							retAckWait=1; // if no data returned from master, send ack wait and repeat
+							if (!requestPending)
+								{
+								sendNotif( REQUEST, rq,0,  swSlave_TaskHandle ); // NOTE TO SELF: change later to run only once
+								requestPending=1;
+								}
 						}
 					 }
 					 else if (request.RnW == WRITE){
-						 retAckOk=1;
+						 if (requestPending==1)
+							 retAckWait=1; // if a WRITE request and
+						 else
+							 { retAckOk=1;
+							   saveData=1;
+							 }
 					 }
 
 					}
@@ -335,6 +352,7 @@ void Swd_SlaveStateMachineShifter(void)
 				break;
 			}
 
+/********** Acknowledge state ************/
 		case SWD_ACKNOWLEDGE:
 			{
 
@@ -432,13 +450,16 @@ void Swd_SlaveStateMachineShifter(void)
 				break;
 			}
 
+
+			/********** Daata transfer state ************/
+
 		case SWD_DATA_TRANSFER:
 			{
 				//data pin already in output mode from rq_ack_turnaournd
 				/*condition is entered in case we have data from master (read request)*/
 				if (dataReceived)
 				{
-					uint8_t bit = (slaveNotif.value>>(31-dataCounter))&0x01;
+					uint8_t bit = (slaveNotif.value1>>(31-dataCounter))&0x01;
 					GPIOE->ODR = ((GPIOE->ODR & ~(SWD_SLAVE_DATA_Pin)) | ( (bit) << 9)); //write bit to swdio
 
 					dataParity^=bit;
@@ -447,6 +468,7 @@ void Swd_SlaveStateMachineShifter(void)
 						dataReceived=0;
 
 				}
+
 				/******/
 
 				if (dataCounter == 32) //this condition is for reading the parity and for preparing the enxt state
@@ -459,6 +481,14 @@ void Swd_SlaveStateMachineShifter(void)
 					}
 					else
 					dataParity = pinState;
+
+					/**********/
+					/*Decides if the data will be sent*/
+					if(saveData)
+					{
+						sendNotif(   DATA_FROM_ISR, rq , data, swSlave_TaskHandle ); // NOTE TO SELF: change later to run only once
+						saveData=0;
+					}
 
 
 					if (request.RnW == READ)
@@ -514,6 +544,7 @@ void Swd_SlaveStateMachineShifter(void)
 
 		case SWD_TURNAROUND_ACK_DAT:	// if  WRITE request : Switch trigger to v, and skip next RISING edge
 			{
+				GPIOE->MODER&= ~(1<<18); // DATA PIN INPUT MODE
 
 				State = SwitchToRisingAndSkipEdge(RISING, SWD_TURNAROUND_ACK_DAT, SWD_DATA_TRANSFER);
 
@@ -605,11 +636,12 @@ inline SlaveStateTypeDef SwitchToRisingAndSkipEdge(uint8_t newEdge, SlaveStateTy
 }
 
 
-inline void sendNotif(uint8_t val , notifTypeTypedef notifType, TaskHandle_t swSlave_TaskHandle ) {
+inline void sendNotif( notifTypeTypedef notifType, uint32_t val1,uint32_t val2, TaskHandle_t swSlave_TaskHandle ) {
 
-			slaveNotif.value=val;
+			slaveNotif.value1=val1;
+			slaveNotif.value2=val2;
+
 			slaveNotif.type = notifType;
-			val = 0;
 
 			BaseType_t xHigherPriorityTaskWoken;
 			xHigherPriorityTaskWoken=pdFALSE;

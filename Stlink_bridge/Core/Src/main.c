@@ -164,7 +164,7 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pins :  SWD_MASTER_DATA_Pin */
   GPIO_InitStruct.Pin = SWD_MASTER_DATA_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(SWD_MASTER_DATA_GPIO_Port, &GPIO_InitStruct);
 

@@ -58,7 +58,7 @@ void requestParser(uint8_t rq, RequestTypeDef* request);
 void changeEdgeTrigger(uint8_t newEdge);
 SlaveStateTypeDef SwitchToRisingAndSkipEdge(uint8_t newEdge,SlaveStateTypeDef sourceState, SlaveStateTypeDef targetState);
 
-void sendNotif(uint8_t val , notifTypeTypedef notifType, TaskHandle_t swSlave_TaskHandle );
+void sendNotif( notifTypeTypedef notifType, uint32_t val1 ,uint32_t val2 ,TaskHandle_t swSlave_TaskHandle );
 
 
 

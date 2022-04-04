@@ -36,6 +36,7 @@ uint8_t bit=0;
 uint32_t dataMaster=0;
 
 
+
 void vMasterswd_Task(void * argument)
 {
 
@@ -47,6 +48,11 @@ void vMasterswd_Task(void * argument)
 				HAL_GPIO_WritePin(GPIOF, GPIO_PIN_12, 1);
 				notif=masterNotif;
 
+				if (notif.type==DATA_FROM_ISR){
+				notif.type=REQUEST;
+						notif.value1=0b10100101;
+				}
+
 				switch(notif.type){
 
 							case LINE_RESET_FULL:
@@ -57,19 +63,28 @@ void vMasterswd_Task(void * argument)
 
 							case REQUEST:
 							{
-								if ((notif.value & (1<<5)) !=0) //READ REQUEST
+								if ((notif.value1 & (1<<5)) !=0) //READ REQUEST
 									{
-									printRequest(notif.value);
+									swdio_Write(notif.value1,8);
+									swclk_cycle(); /*turnaround*/
 									readAck();
 									if (ackMaster==0x04) //ACK OK
 										{
 											readData();
 											slaveNotif.type=DATA_FROM_MASTER;
-											slaveNotif.value=dataMaster;
+											slaveNotif.value1=dataMaster;
 											xTaskNotify(swSlave_TaskHandle,0,eNoAction);
+
+											swclk_reset(); // change here tomtowwos
+
+											//swclk_cycle(); /*turnaround*/
+											//swclk_cycle(); /*turnaround*/
+
+										//	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, 0);
+
+
+
 										}
-
-
 
 									}
 								else
@@ -86,7 +101,23 @@ void vMasterswd_Task(void * argument)
 
 							case DATA_FROM_ISR:
 							{
+								swdio_Write(notif.value1,8);
+
+								//while( readAck()==0x02); //read ack until ack ok
+								swclk_cycle(); /*turnaround*/
+								readAck();
+								swclk_cycle(); /*turnaround*/
+								swdio_Write(notif.value2,32);
+
+								swdio_Write(parity(notif.value2),1);
+
+
+
 								//printData(notif.value);
+								break;
+							}
+							default:
+							{
 								break;
 							}
 						}
@@ -115,6 +146,7 @@ void vMasterswd_Task(void * argument)
 
 
 
+
 /* Print an 8 bit request (rq) on  falling edges*/
 inline void printRequest(uint32_t rq)
 {
@@ -122,7 +154,7 @@ inline void printRequest(uint32_t rq)
 	for (int i=7;i>=0;i--)
 	{
 
-		swdio_Write(  (rq>>i)&0x01  );
+		swdio_WriteBit(  (rq>>i)&0x01  );
 		swclk_cycle();
 
 
@@ -155,13 +187,12 @@ inline void printRequest(uint32_t rq)
 
 }
 
-inline void readAck()
+inline uint8_t readAck()
 {
 
 	   GPIOD->MODER&= ~(1<<26); // DATA PIN INPUT MODE
 
-	    /*Turanrund*/
-		swclk_cycle();
+
 
 		/*ACK read*/
 		ackMaster=0;
@@ -172,7 +203,7 @@ inline void readAck()
 
 		GPIOD->MODER|=(1<<26); // DATA PIN OUTPUT MODE
 
-
+		return ackMaster;
 
 		//HAL_GPIO_WritePin(GPIOD, SWD_MASTER_CLk_Pin, 1);
 
@@ -296,11 +327,40 @@ inline void swclk_cycle(){
 
 }
 
-inline void swdio_Write(uint8_t bit)
+inline void swdio_WriteBit(uint8_t bit)
 {
 	GPIOD->ODR = ((GPIOD->ODR & ~(SWD_MASTER_DATA_Pin)) | ( (bit) << 13)); // equivalent to :
 	//HAL_GPIO_WritePin(GPIOD, SWD_MASTER_DATA_Pin, bit );
 
+}
+
+inline void swdio_Write(uint32_t val , uint8_t len)
+{
+	swclk_set();
+	for (int i=len-1;i>=0;i--)
+	{
+		uint8_t bit=(val>>i)&0x01;
+		swdio_WriteBit(  bit  );
+
+
+		swclk_cycle();
+
+
+	}
+
+}
+
+inline uint8_t parity(uint32_t val)
+{
+	uint8_t ret=0;
+	for(int i=31;i>=0;i--)
+	{
+		uint8_t bit=(val>>i)&0x01;
+		ret ^=bit;
+
+	}
+
+	return ret;
 }
 
 inline void swdio_Read(uint32_t* response)
@@ -312,6 +372,8 @@ inline void swdio_Read(uint32_t* response)
 
 	swclk_set();
 }
+
+
 
 
 /**

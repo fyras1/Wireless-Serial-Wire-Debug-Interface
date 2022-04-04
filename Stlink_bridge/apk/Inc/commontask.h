@@ -33,7 +33,8 @@
 
  typedef struct ns{
 	 notifTypeTypedef type;
-	 uint32_t value;
+	 uint32_t value1;
+	 uint32_t value2;
  } notificationStruct;
 
  extern notificationStruct slaveNotif,masterNotif;
