@@ -31,7 +31,7 @@ int main(void)
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
 
-	HAL_Init();
+ 	HAL_Init();
 
 
   SCB_EnableICache();
@@ -56,8 +56,6 @@ int main(void)
   }
   /* USER CODE END 3 */
 }
-
-
 
 
 
@@ -152,7 +150,7 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin : SWD_SLAVE_DATA_Pin */
   GPIO_InitStruct.Pin = SWD_SLAVE_DATA_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(SWD_SLAVE_DATA_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : SWD_SLAVE_CLK_Pin */
@@ -164,7 +162,7 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pins :  SWD_MASTER_DATA_Pin */
   GPIO_InitStruct.Pin = SWD_MASTER_DATA_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN; //changed
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(SWD_MASTER_DATA_GPIO_Port, &GPIO_InitStruct);
 

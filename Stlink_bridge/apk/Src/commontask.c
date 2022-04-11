@@ -51,14 +51,14 @@ void vCommontask_StartApk(void )
 	InitHandler();
 
 	/* Creat Supervisor Task */
-   xReturned = xTaskCreate(vSlaveswd_Task,"SLAVE",200U ,NULL,(tskIDLE_PRIORITY+4U), &swSlave_TaskHandle );
+   xReturned = xTaskCreate(vSlaveswd_Task,"SLAVE",400U ,NULL,(tskIDLE_PRIORITY+4U), &swSlave_TaskHandle );
 
 	if (xReturned!=pdPASS )
 	{
 		GlobalError(TASK_CREATION_FAIL_);
 	}
 
-   xReturned = xTaskCreate(vMasterswd_Task,"MASTER",200U ,NULL,(tskIDLE_PRIORITY+4U), &swMaster_TaskHandle );
+   xReturned = xTaskCreate(vMasterswd_Task,"MASTER",400U ,NULL,(tskIDLE_PRIORITY+4U), &swMaster_TaskHandle );
 
 	if (xReturned!=pdPASS )
 	{

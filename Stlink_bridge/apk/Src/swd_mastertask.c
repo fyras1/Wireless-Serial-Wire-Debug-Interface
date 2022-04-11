@@ -36,6 +36,7 @@ uint8_t bit=0;
 uint32_t dataMaster=0;
 
 
+uint8_t errFlagMaster=0;
 
 void vMasterswd_Task(void * argument)
 {
@@ -44,102 +45,107 @@ void vMasterswd_Task(void * argument)
 	notificationStruct notif;
 	while(1)
 	{
-				xTaskNotifyWait(0, 0xffffffff, NULL, portMAX_DELAY);
-				HAL_GPIO_WritePin(GPIOF, GPIO_PIN_12, 1);
-				notif=masterNotif;
+		xTaskNotifyWait(0x00, 0xFFFFFFFFUL, NULL, portMAX_DELAY);
 
-				if (notif.type==DATA_FROM_ISR){
-				notif.type=REQUEST;
-						notif.value1=0b10100101;
-				}
+	    HAL_GPIO_WritePin(GPIOF, GPIO_PIN_12, 1);
 
-				switch(notif.type){
+		notif=masterNotif;
 
-							case LINE_RESET_FULL:
-							{
-								printReset();
-								break;
-							}
+//		if notif.type==DATA_FROM_ISR){
+//		notf.type=REQUEST;
+//			notif.value1=0b10100101;
+//		}
 
-							case REQUEST:
-							{
-								if ((notif.value1 & (1<<5)) !=0) //READ REQUEST
-									{
-									swdio_Write(notif.value1,8);
-									swclk_cycle(); /*turnaround*/
-									readAck();
-									if (ackMaster==0x04) //ACK OK
-										{
-											readData();
-											slaveNotif.type=DATA_FROM_MASTER;
-											slaveNotif.value1=dataMaster;
-											xTaskNotify(swSlave_TaskHandle,0,eNoAction);
+		switch(notif.type){
 
-											swclk_reset(); // change here tomtowwos
+		case LINE_RESET_FULL:
+		{
+			printReset();
+			break;
+		}
 
-											//swclk_cycle(); /*turnaround*/
-											//swclk_cycle(); /*turnaround*/
-
-										//	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, 0);
+		case REQUEST:
+		{
+			if ((notif.value1 & (1<<5)) !=0) //READ REQUEST
+		    {
+		    swdio_Write(notif.value1,8);
+		    swclk_cycle(); /*turnaround*/
+		    readAck();
+		    if (ackMaster==0x04) //ACK OK
+		    {
+		    	readData();
+		    	slaveNotif.type=DATA_FROM_MASTER;
+		    	slaveNotif.value1=dataMaster;
+		    	xTaskNotify(swSlave_TaskHandle,0,eNoAction);
 
 
 
-										}
+		    	swclk_cycle(); /*turnaround*/
 
-									}
-								else
-									{
+		    	swdio_mode_output();
 
-									}
-							 break;
-							}
+		    	swdio_Write(0,8);
 
-							case ACK:
-							{
-								break;
-							}
-
-							case DATA_FROM_ISR:
-							{
-								swdio_Write(notif.value1,8);
-
-								//while( readAck()==0x02); //read ack until ack ok
-								swclk_cycle(); /*turnaround*/
-								readAck();
-								swclk_cycle(); /*turnaround*/
-								swdio_Write(notif.value2,32);
-
-								swdio_Write(parity(notif.value2),1);
+		    //	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, 0);
 
 
 
-								//printData(notif.value);
-								break;
-							}
-							default:
-							{
-								break;
-							}
-						}
+		    }
+
+		    }
+		   else
+		   {
+
+		   }
+		 break;
+		}
+
+		case ACK:
+		{
+			break;
+		}
+
+		case DATA_FROM_ISR:
+		{
+			swdio_Write(notif.value1,8);
+			//while( readAck()==0x02); //read ack until ack ok
+			swclk_cycle(); /*turnaround*/
+			readAck();
+			swclk_cycle(); /*turnaround*/
+			swdio_Write(notif.value2,32);
+
+			swdio_Write(parity(notif.value2),1);
+
+			swdio_mode_output();
+			swdio_Write(0,8);
+			//masterNotif.type=ACK;
+
+
+
+			//printData(notif.value);
+			break;
+		}
+		default:
+		{
+			break;
+		}
+
+	    }
 
 
 
 
-		/*Increment TaskTick*/
-		h_global.TaskTick.Swd_Master++;
+        /*Increment TaskTick*/
+        h_global.TaskTick.Swd_Master++;
 
 
 
-		//osDelay(200);
-		HAL_GPIO_WritePin(GPIOF, GPIO_PIN_12, 0);
-
-	}
-
-
+        //osDelay(200);
+        HAL_GPIO_WritePin(GPIOF, GPIO_PIN_12, 0);
+		}
 
 
 }
-
 
 
 
