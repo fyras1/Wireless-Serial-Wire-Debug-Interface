@@ -16,13 +16,16 @@
 
  typedef enum
   {  //SWD_SELF_ACK_WAIT,
+	 SWD_TURNAROUND_RQ_ACK,
+	 SWD_REQUEST,
 	 SWD_SLAVE_WAIT_FOR_START,
+
+
 	 SWD_LINE_RESET_1,
 	 SWD_JTAG_SELECT,
 	 SWD_LINE_RESET_2,
 	 SWD_WAIT_FOR_REQUEST,
-	 SWD_REQUEST,
-	 SWD_TURNAROUND_RQ_ACK,
+
 	 SWD_ACKNOWLEDGE,
 	 SWD_TURNAROUND_ACK_RQ,
 	 SWD_TURNAROUND_ACK_DAT,
@@ -58,7 +61,7 @@ void requestParser(uint8_t rq, RequestTypeDef* request);
 void changeEdgeTrigger(uint8_t newEdge);
 SlaveStateTypeDef SwitchToRisingAndSkipEdge(uint8_t newEdge,SlaveStateTypeDef sourceState, SlaveStateTypeDef targetState);
 
-void sendNotif( notifTypeTypedef notifType, uint32_t val1 ,uint32_t val2 ,TaskHandle_t swSlave_TaskHandle );
+void sendNotif( notifTypeTypedef notifType, uint32_t val1 ,uint32_t val2 ,TaskHandle_t *swSlave_TaskHandle );
 
 
 

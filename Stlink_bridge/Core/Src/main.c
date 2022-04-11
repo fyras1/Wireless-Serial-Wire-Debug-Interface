@@ -225,7 +225,11 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 
 
 }
-
+uint8_t stackOverFlowCtr;
+void vApplicationStackOverflowHook( TaskHandle_t xTask,signed char *pcTaskName )
+{
+	stackOverFlowCtr++;
+}
 /**
   * @brief  This function is executed in case of error occurrence.
   * @retval None

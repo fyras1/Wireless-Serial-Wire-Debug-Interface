@@ -153,14 +153,14 @@ RequestTypeDef request;
 //for debug
 
 SlaveStateTypeDef StateBuffer[1000];
-uint32_t dataBuffer[1000];
-uint8_t ackBuffer[1000];
-uint8_t requestBuffer[1000];
-
+//uint32_t dataBuffer[1000];
+//uint8_t ackBuffer[1000];
+//uint8_t requestBuffer[1000];
+//
 uint32_t stateBufferCounter = 0;
-uint32_t dataBufferCounter = 0;
-uint32_t ackBufferCounter = 0;
-uint32_t requestBufferCounter = 0;
+//uint32_t dataBufferCounter = 0;
+//uint32_t ackBufferCounter = 0;
+//uint32_t requestBufferCounter = 0;
 
 uint32_t nbexti=0;
 
@@ -198,9 +198,11 @@ void Swd_SlaveStateMachineShifter(void)
 				//increase reset 1 bits if 1
 
 				if (pinState == 1)
+					{
 					nbBitsRst1++;
+					}
 				// if pinState is 0 check if if consecutive reset bits >=50 or not
-				else if (pinState == 0)
+				else //if (pinState == 0)
 				{
 					if (nbBitsRst1 >= 50)
 					{
@@ -218,6 +220,7 @@ void Swd_SlaveStateMachineShifter(void)
 
 		case SWD_JTAG_SELECT:
 			{
+
 				SWDseq = (SWDseq << 1) | pinState;
 				seqCounter++;
 				if (SWDseq == SWD_Select_Seq)
@@ -234,7 +237,10 @@ void Swd_SlaveStateMachineShifter(void)
 				}
 				else if (seqCounter > 16)	// should never come here
 					State = unexpected_error_handler(SWD_JTAG_SELECT);
+				else
+				{
 
+				}
 				break;
 			}
 
@@ -242,13 +248,14 @@ void Swd_SlaveStateMachineShifter(void)
 			{
 				if (pinState == 1)
 					nbBitsRst2++;
-				else if (pinState == 0)
+				else //if (pinState == 0)
 				{
 					if ((SWDorJTAG == SWD && nbBitsRst2 >= 50) || (SWDorJTAG == JTAG && nbBitsRst2 >= 5))
 					{
 						State = SWD_WAIT_FOR_REQUEST;
 						nbBitsRst2 = 0;
-						sendNotif(LINE_RESET_FULL,0,0 , swSlave_TaskHandle);
+						sendNotif(LINE_RESET_FULL,0,0 , &swSlave_TaskHandle);
+						requestPending=0;
 
 					}
 
@@ -279,7 +286,6 @@ void Swd_SlaveStateMachineShifter(void)
 			{
 //				HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 1);
 //				HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 0);
-
 
 				//add new bit to rq
 
@@ -322,15 +328,18 @@ void Swd_SlaveStateMachineShifter(void)
 							retAckWait=1; // if no data returned from master, send ack wait and repeat
 							if (!requestPending)
 								{
-								sendNotif( REQUEST, rq,0,  swSlave_TaskHandle ); // NOTE TO SELF: change later to run only once
+								sendNotif( REQUEST, rq,0,  &swSlave_TaskHandle ); // NOTE TO SELF: change later to run only once
 								requestPending=1;
 								}
 						}
 					 }
 
-					 else if (request.RnW == WRITE){
+					 else
+					 {
 						 if (requestPending==1)
+							 {
 							 retAckWait=1; // if a WRITE request and
+							 }
 						 else
 							 { retAckOk=1;
 							   saveData=1;
@@ -439,6 +448,11 @@ void Swd_SlaveStateMachineShifter(void)
 
 				}
 
+				else
+				{
+					//
+				}
+
 
 				break;
 			}
@@ -481,7 +495,7 @@ void Swd_SlaveStateMachineShifter(void)
 					/*Decides if the data will be sent*/
 					if(saveData)
 					{
-						sendNotif(   DATA_FROM_ISR, rq , data, swSlave_TaskHandle ); // NOTE TO SELF: change later to run only once
+						sendNotif(   DATA_FROM_ISR, rq , data, &swSlave_TaskHandle ); // NOTE TO SELF: change later to run only once
 						saveData=0;
 					}
 
@@ -559,7 +573,13 @@ void Swd_SlaveStateMachineShifter(void)
 
 
     if (State != oldState || State==SWD_REQUEST) {
-      StateBuffer[stateBufferCounter++]=State;
+      StateBuffer[stateBufferCounter]=State;
+
+      if (StateBuffer[stateBufferCounter] == 189 )
+      {
+    	  oldState = State;
+      }
+      stateBufferCounter++;
       oldState = State;
    }
 
@@ -640,7 +660,7 @@ inline SlaveStateTypeDef SwitchToRisingAndSkipEdge(uint8_t newEdge, SlaveStateTy
 }
 
 
-inline void sendNotif( notifTypeTypedef notifType, uint32_t val1,uint32_t val2, TaskHandle_t swSlave_TaskHandle ) {
+inline void sendNotif( notifTypeTypedef notifType, uint32_t val1,uint32_t val2, TaskHandle_t *swSlave_TaskHandle ) {
 
 			slaveNotif.value1=val1;
 			slaveNotif.value2=val2;
@@ -650,7 +670,7 @@ inline void sendNotif( notifTypeTypedef notifType, uint32_t val1,uint32_t val2, 
 			BaseType_t xHigherPriorityTaskWoken;
 			xHigherPriorityTaskWoken=pdFALSE;
 
-			xTaskNotifyFromISR(swSlave_TaskHandle,0,eNoAction,&xHigherPriorityTaskWoken);
+			xTaskNotifyFromISR(*swSlave_TaskHandle,0,eNoAction,&xHigherPriorityTaskWoken);
 
 
 			portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
