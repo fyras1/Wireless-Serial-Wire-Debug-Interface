@@ -34,7 +34,7 @@ int main(void)
  	HAL_Init();
 
 
-  SCB_EnableICache();
+  //SCB_EnableICache();
 
 
   /* Configure the system clock */

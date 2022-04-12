@@ -116,9 +116,11 @@ uint16_t buffer[50];
 uint8_t bitPlacement = 15;
 uint8_t bufferCtr = 0; */
 
-uint8_t JTAGtoSWDSwitchFlag = 0;
 
 SlaveStateTypeDef State = SWD_SLAVE_WAIT_FOR_START;
+
+uint8_t JTAGtoSWDSwitchFlag = 0;
+
 
 uint32_t nbBitsRst1 = 0;
 uint32_t nbBitsRst2 = 0;
@@ -165,6 +167,9 @@ uint32_t stateBufferCounter = 0;
 uint32_t nbexti=0;
 
 SlaveStateTypeDef oldState = SWD_SLAVE_WAIT_FOR_START;
+
+
+
 
 
 
@@ -328,8 +333,9 @@ void Swd_SlaveStateMachineShifter(void)
 							retAckWait=1; // if no data returned from master, send ack wait and repeat
 							if (!requestPending)
 								{
-								sendNotif( REQUEST, rq,0,  &swSlave_TaskHandle ); // NOTE TO SELF: change later to run only once
 								requestPending=1;
+								sendNotif( REQUEST, rq,0,  &swSlave_TaskHandle ); // NOTE TO SELF: change later to run only once
+
 								}
 						}
 					 }
@@ -494,9 +500,9 @@ void Swd_SlaveStateMachineShifter(void)
 					/**********/
 					/*Decides if the data will be sent*/
 					if(saveData)
-					{
+					{  saveData=0;
 						sendNotif(   DATA_FROM_ISR, rq , data, &swSlave_TaskHandle ); // NOTE TO SELF: change later to run only once
-						saveData=0;
+
 					}
 
 
@@ -572,16 +578,16 @@ void Swd_SlaveStateMachineShifter(void)
 	}
 
 
-    if (State != oldState || State==SWD_REQUEST) {
-      StateBuffer[stateBufferCounter]=State;
-
-      if (StateBuffer[stateBufferCounter] == 189 )
-      {
-    	  oldState = State;
-      }
-      stateBufferCounter++;
-      oldState = State;
-   }
+//    if (State != oldState || State==SWD_REQUEST) {
+//      StateBuffer[stateBufferCounter]=State;
+//
+//      if (StateBuffer[stateBufferCounter] == 189 )
+//      {
+//    	  oldState = State;
+//      }
+//      stateBufferCounter++;
+//      oldState = State;
+//   }
 
 
 
