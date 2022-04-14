@@ -42,6 +42,7 @@ void vMasterswd_Task(void * argument)
 {
 
 
+	//notificationStruct *notif;
 	notificationStruct notif;
 	while(1)
 	{
@@ -49,14 +50,22 @@ void vMasterswd_Task(void * argument)
 
 	    HAL_GPIO_WritePin(GPIOF, GPIO_PIN_12, 1);
 
-		notif=masterNotif;
+		//notif=&masterNotif;
+
+	    notif.type=masterNotif.type;
+	    notif.value1=masterNotif.value1;
+	    notif.value2=masterNotif.value2;
+
+
 
 //		if notif.type==DATA_FROM_ISR){
 //		notf.type=REQUEST;
 //			notif.value1=0b10100101;
 //		}
 
-		switch(notif.type){
+		//switch(notif->type){
+
+	    switch(notif.type){
 
 		case LINE_RESET_FULL:
 		{

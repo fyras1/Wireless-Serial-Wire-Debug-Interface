@@ -36,14 +36,26 @@ void vSlaveswd_Task(void *argumen0t)
 
 
 		//HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 1);
-		notif=slaveNotif;
+		//notif=slaveNotif;
+
+		notif.type=slaveNotif.type;
+		notif.value1=slaveNotif.value1;
+		notif.value2=slaveNotif.value2;
+
+		masterNotif.type=notif.type;
+		masterNotif.value1=notif.value1;
+		masterNotif.value2=notif.value2;
+
+
+
+
 
 
 
 		switch(notif.type){
 			case REQUEST:
 			{
-			    masterNotif=notif;
+			//    masterNotif=notif;
 				xTaskNotify(swMaster_TaskHandle,0,eNoAction);
 			 break;
 			}
@@ -55,7 +67,7 @@ void vSlaveswd_Task(void *argumen0t)
 
 			case DATA_FROM_ISR:
 			{
-			    masterNotif=notif;
+			//    masterNotif=notif;
 				xTaskNotify(swMaster_TaskHandle,0,eNoAction);
 				break;
 			}
@@ -68,7 +80,7 @@ void vSlaveswd_Task(void *argumen0t)
 
 			case LINE_RESET_FULL:
 			{
-			    masterNotif=notif;
+			  //  masterNotif=notif;
 				xTaskNotify(swMaster_TaskHandle,0,eNoAction);
 				break;
 			}
