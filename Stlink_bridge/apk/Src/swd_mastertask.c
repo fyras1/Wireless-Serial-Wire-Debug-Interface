@@ -43,7 +43,7 @@ void vMasterswd_Task(void * argument)
 
 
 	//notificationStruct *notif;
-	notificationStruct notif;
+	//notificationStruct notif;
 	while(1)
 	{
 		xTaskNotifyWait(0x00, 0xFFFFFFFFUL, NULL, portMAX_DELAY);
@@ -51,10 +51,10 @@ void vMasterswd_Task(void * argument)
 	    HAL_GPIO_WritePin(GPIOF, GPIO_PIN_12, 1);
 
 		//notif=&masterNotif;
-
-	    notif.type=masterNotif.type;
-	    notif.value1=masterNotif.value1;
-	    notif.value2=masterNotif.value2;
+//
+//	    notif.type=masterNotif.type;
+//	    notif.value1=masterNotif.value1;
+//	    notif.value2=masterNotif.value2;
 
 
 
@@ -65,7 +65,7 @@ void vMasterswd_Task(void * argument)
 
 		//switch(notif->type){
 
-	    switch(notif.type){
+	    switch(masterNotif.type){
 
 		case LINE_RESET_FULL:
 		{
@@ -75,16 +75,20 @@ void vMasterswd_Task(void * argument)
 
 		case REQUEST:
 		{
-			if ((notif.value1 & (1<<5)) !=0) //READ REQUEST
+			if ((masterNotif.value1 & (1<<5)) !=0) //READ REQUEST
 		    {
-		    swdio_Write(notif.value1,8);
+		    swdio_Write(masterNotif.value1,8);
 		    swclk_cycle(); /*turnaround*/
 		    readAck();
 		    if (ackMaster==0x04) //ACK OK
 		    {
 		    	readData();
+				HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 1);
+
 		    	slaveNotif.type=DATA_FROM_MASTER;
 		    	slaveNotif.value1=dataMaster;
+				HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 0);
+
 		    	xTaskNotify(swSlave_TaskHandle,0,eNoAction);
 
 
@@ -116,14 +120,14 @@ void vMasterswd_Task(void * argument)
 
 		case DATA_FROM_ISR:
 		{
-			swdio_Write(notif.value1,8);
+			swdio_Write(masterNotif.value1,8);
 			//while( readAck()==0x02); //read ack until ack ok
 			swclk_cycle(); /*turnaround*/
 			readAck();
 			swclk_cycle(); /*turnaround*/
-			swdio_Write(notif.value2,32);
+			swdio_Write(masterNotif.value2,32);
 
-			swdio_Write(parity(notif.value2),1);
+			swdio_Write(parity(masterNotif.value2),1);
 
 			swdio_mode_output();
 			swdio_Write(0,8);

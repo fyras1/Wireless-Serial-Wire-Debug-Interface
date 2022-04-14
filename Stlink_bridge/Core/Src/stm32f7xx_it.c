@@ -170,9 +170,9 @@ void EXTI15_10_IRQHandler(void)
   /*Clear Pending */
   __HAL_GPIO_EXTI_CLEAR_IT(SWD_SLAVE_CLK_Pin);
 
-	HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 1);
+	//HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 1);
    Swd_SlaveStateMachineShifter();
-	HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 0);
+	//HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 0);
 
 
 //  HAL_GPIO_EXTI_IRQHandler(SWD_SLAVE_CLK_Pin);
