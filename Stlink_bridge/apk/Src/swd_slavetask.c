@@ -117,10 +117,9 @@ uint8_t bitPlacement = 15;
 uint8_t bufferCtr = 0; */
 
 
-SlaveStateTypeDef State = SWD_SLAVE_WAIT_FOR_START;
+
 
 uint8_t JTAGtoSWDSwitchFlag = 0;
-
 
 uint32_t nbBitsRst1 = 0;
 uint32_t nbBitsRst2 = 0;
@@ -128,7 +127,7 @@ uint16_t SWDseq = 0;
 uint8_t seqCounter = 0;
 uint32_t EXTIcounter = 0;
 uint32_t diffCounter = 0;
-uint8_t rq = 0;
+uint32_t rq = 0;
 uint8_t ack = 0;
 uint8_t ackCounter = 0;
 uint8_t turnAroundSkipCounter = 0;
@@ -165,6 +164,8 @@ uint32_t stateBufferCounter = 0;
 //uint32_t requestBufferCounter = 0;
 
 uint32_t nbexti=0;
+
+SlaveStateTypeDef State = SWD_SLAVE_WAIT_FOR_START;
 
 SlaveStateTypeDef oldState = SWD_SLAVE_WAIT_FOR_START;
 
@@ -578,16 +579,16 @@ void Swd_SlaveStateMachineShifter(void)
 	}
 
 
-//    if (State != oldState || State==SWD_REQUEST) {
-//      StateBuffer[stateBufferCounter]=State;
-//
-//      if (StateBuffer[stateBufferCounter] == 189 )
-//      {
-//    	  oldState = State;
-//      }
-//      stateBufferCounter++;
-//      oldState = State;
-//   }
+    if (State != oldState || State==SWD_REQUEST) {
+      StateBuffer[stateBufferCounter]=State;
+
+      if (StateBuffer[stateBufferCounter] == 189 )
+      {
+    	  oldState = State;
+      }
+      stateBufferCounter++;
+      oldState = State;
+   }
 
 
 
