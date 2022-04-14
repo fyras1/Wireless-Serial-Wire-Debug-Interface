@@ -681,13 +681,13 @@ inline SlaveStateTypeDef SwitchToRisingAndSkipEdge(uint8_t newEdge, SlaveStateTy
 
 inline void sendNotif( notifTypeTypedef notifType, uint32_t val1,uint32_t val2, TaskHandle_t *swSlave_TaskHandle ) {
 
-					HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 1);
+				//	HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 1);
 			slaveNotif.value1=val1;
 			slaveNotif.value2=val2;
 
 			slaveNotif.type = notifType;
 
-					HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 0);
+				//	HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 0);
 
 
 			BaseType_t xHigherPriorityTaskWoken;

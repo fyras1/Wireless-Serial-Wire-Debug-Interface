@@ -83,11 +83,11 @@ void vMasterswd_Task(void * argument)
 		    if (ackMaster==0x04) //ACK OK
 		    {
 		    	readData();
-				HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 1);
+				//HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 1);
 
 		    	slaveNotif.type=DATA_FROM_MASTER;
 		    	slaveNotif.value1=dataMaster;
-				HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 0);
+				//HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 0);
 
 		    	xTaskNotify(swSlave_TaskHandle,0,eNoAction);
 
