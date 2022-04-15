@@ -151,12 +151,16 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pin = SWD_SLAVE_DATA_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+
   HAL_GPIO_Init(SWD_SLAVE_DATA_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : SWD_SLAVE_CLK_Pin */
   GPIO_InitStruct.Pin = SWD_SLAVE_CLK_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING; // changed to RISING
   GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+
   HAL_GPIO_Init(SWD_SLAVE_CLK_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins :  SWD_MASTER_DATA_Pin */

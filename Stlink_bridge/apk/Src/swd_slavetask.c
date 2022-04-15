@@ -24,7 +24,9 @@
  */
 
 uint8_t dataReceived=0;
+uint8_t dataWriteFinish=1;
 uint8_t errFlagSlave=0;
+
 void vSlaveswd_Task(void *argumen0t)
 {
 	notificationStruct notif;
@@ -35,7 +37,7 @@ void vSlaveswd_Task(void *argumen0t)
 		xTaskNotifyWait(0x00, 0xffffffff, NULL, portMAX_DELAY);
 
 
-		//HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 1);
+		HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 1);
 		//notif=slaveNotif;
 
 		notif.type=slaveNotif.type;
@@ -84,11 +86,17 @@ void vSlaveswd_Task(void *argumen0t)
 				xTaskNotify(swMaster_TaskHandle,0,eNoAction);
 				break;
 			}
+
+			case DATA_WRITE_FINISH:
+			{
+				dataWriteFinish=1;
+				break;
+			}
 		}
 
 		/*Increment TaskTick*/
 		h_global.TaskTick.Swd_Slave++;
-	//    HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 0);
+	  HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 0);
 		//osDelay(200);
 
 
@@ -245,13 +253,13 @@ void Swd_SlaveStateMachineShifter(void)
 				{
 					SWDorJTAG = SWD;
 					State = SWD_LINE_RESET_2;
-					SWDseq = 0;
+					//SWDseq = 0;
 				}
 				else if (SWDseq == JTAG_Select_Seq)
 				{
 					SWDorJTAG = JTAG;
 					State = SWD_LINE_RESET_2;
-					SWDseq = 0;
+					//SWDseq = 0;
 				}
 				else if (seqCounter > 16)	// should never come here
 					State = unexpected_error_handler(SWD_JTAG_SELECT);
@@ -272,8 +280,9 @@ void Swd_SlaveStateMachineShifter(void)
 					{
 						State = SWD_WAIT_FOR_REQUEST;
 						nbBitsRst2 = 0;
-						sendNotif(LINE_RESET_FULL,0,0 , &swSlave_TaskHandle);
+						sendNotif(LINE_RESET_FULL,SWDseq,0 , &swSlave_TaskHandle);
 						requestPending=0;
+						SWDseq = 0;
 
 					}
 
@@ -344,7 +353,7 @@ void Swd_SlaveStateMachineShifter(void)
 						}
 						else{
 							retAckWait=1; // if no data returned from master, send ack wait and repeat
-							if (!requestPending)
+							if (!requestPending && dataWriteFinish)
 								{
 								requestPending=1;
 								sendNotif( REQUEST, rq,0,  &swSlave_TaskHandle ); // NOTE TO SELF: change later to run only once
@@ -515,7 +524,7 @@ void Swd_SlaveStateMachineShifter(void)
 					if(saveData)
 					{  saveData=0;
 						sendNotif(   DATA_FROM_ISR, rq , data, &swSlave_TaskHandle ); // NOTE TO SELF: change later to run only once
-
+						dataWriteFinish=0; //try move before sendNotif;
 					}
 
 

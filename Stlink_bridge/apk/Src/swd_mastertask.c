@@ -69,7 +69,7 @@ void vMasterswd_Task(void * argument)
 
 		case LINE_RESET_FULL:
 		{
-			printReset();
+			printReset(masterNotif.value1);
 			break;
 		}
 
@@ -80,6 +80,16 @@ void vMasterswd_Task(void * argument)
 		    swdio_Write(masterNotif.value1,8);
 		    swclk_cycle(); /*turnaround*/
 		    readAck();
+		    //ackMaster=0x02; simulate ack wait
+		    while(ackMaster==0x02)
+		    {
+				swclk_cycle(); /*turnaround*/
+				swdio_Write(masterNotif.value1,8);
+				swclk_cycle(); /*turnaround*/
+				readAck();
+
+
+		    }
 		    if (ackMaster==0x04) //ACK OK
 		    {
 		    	readData();
@@ -97,7 +107,9 @@ void vMasterswd_Task(void * argument)
 
 		    	swdio_mode_output();
 
-		    	swdio_Write(0,8);
+		    	swdio_Write(0,50); /*trailing bits*/
+
+
 
 		    //	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, 0);
 
@@ -130,8 +142,15 @@ void vMasterswd_Task(void * argument)
 			swdio_Write(parity(masterNotif.value2),1);
 
 			swdio_mode_output();
-			swdio_Write(0,8);
+			swdio_Write(0,50); /*trailing bits*/
 			//masterNotif.type=ACK;
+
+
+	    	slaveNotif.type=DATA_WRITE_FINISH;
+	    	slaveNotif.value1=0;
+			//HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 0);
+
+	    	xTaskNotify(swSlave_TaskHandle,0,eNoAction);
 
 
 
@@ -256,7 +275,7 @@ inline void readData()
  * SWD select sequnce MSB
  * 53 bits LINE RESET 2
  * 3 empty bits*/
-inline void printReset(void)
+inline void printReset(uint32_t SWDorJTAG_val)
 {
 
 	HAL_GPIO_WritePin(GPIOD, SWD_MASTER_DATA_Pin,1 );
@@ -271,15 +290,18 @@ inline void printReset(void)
 		}
 
 
-	for (int i=15;i>=0;i--)
-		{
+	swdio_Write(SWDorJTAG_val,16);
 
-			//MANUAL FALLING EDGE
-			// note to self: chagne to GPIOD->ODR later
-		HAL_GPIO_WritePin(GPIOD, SWD_MASTER_DATA_Pin, (SWD_Select_Seq>>i)&0x01 );
-		swclk_cycle();
 
-		}
+//	for (int i=15;i>=0;i--)
+//		{
+//
+//			//MANUAL FALLING EDGE
+//			// note to self: chagne to GPIOD->ODR later
+//		HAL_GPIO_WritePin(GPIOD, SWD_MASTER_DATA_Pin, (SWD_Select_Seq>>i)&0x01 );
+//		swclk_cycle();
+//
+//		}
 
 
 

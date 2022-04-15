@@ -18,7 +18,7 @@
 /*function prototype ---------------*/
  void vMasterswd_Task(void * argument);
  void printRequest(uint32_t rq);
- void printReset(void);
+ void printReset(uint32_t SWDorJTAG_val);
 
  void swclk_reset(void);
  void swclk_set(void);
