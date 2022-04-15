@@ -173,12 +173,12 @@ RequestTypeDef request;
 
 //for debug
 
-SlaveStateTypeDef StateBuffer[1000];
+//SlaveStateTypeDef StateBuffer[1000];
 //uint32_t dataBuffer[1000];
 //uint8_t ackBuffer[1000];
 //uint8_t requestBuffer[1000];
 //
-uint32_t stateBufferCounter = 0;
+//uint32_t stateBufferCounter = 0;
 //uint32_t dataBufferCounter = 0;
 //uint32_t ackBufferCounter = 0;
 //uint32_t requestBufferCounter = 0;
@@ -600,16 +600,16 @@ void Swd_SlaveStateMachineShifter(void)
 	}
 
 
-    if (State != oldState || State==SWD_REQUEST) {
-      StateBuffer[stateBufferCounter]=State;
-
-      if (StateBuffer[stateBufferCounter] == 189 )
-      {
-    	  oldState = State;
-      }
-      stateBufferCounter++;
-      oldState = State;
-   }
+//    if (State != oldState || State==SWD_REQUEST) {
+//      StateBuffer[stateBufferCounter]=State;
+//
+//      if (StateBuffer[stateBufferCounter] == 189 )
+//      {
+//    	  oldState = State;
+//      }
+//      stateBufferCounter++;
+//      oldState = State;
+//   }
 
 
 
