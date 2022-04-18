@@ -48,7 +48,7 @@ void vMasterswd_Task(void * argument)
 	{
 		xTaskNotifyWait(0x00, 0xFFFFFFFFUL, NULL, portMAX_DELAY);
 
-	    HAL_GPIO_WritePin(GPIOF, GPIO_PIN_12, 1);
+	   // HAL_GPIO_WritePin(GPIOF, GPIO_PIN_12, 1);
 
 		//notif=&masterNotif;
 //
@@ -173,7 +173,7 @@ void vMasterswd_Task(void * argument)
 
 
         //osDelay(200);
-        HAL_GPIO_WritePin(GPIOF, GPIO_PIN_12, 0);
+       // HAL_GPIO_WritePin(GPIOF, GPIO_PIN_12, 0);
 		}
 
 

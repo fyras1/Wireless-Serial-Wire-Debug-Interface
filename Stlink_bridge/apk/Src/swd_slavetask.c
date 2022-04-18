@@ -37,7 +37,7 @@ void vSlaveswd_Task(void *argumen0t)
 		xTaskNotifyWait(0x00, 0xffffffff, NULL, portMAX_DELAY);
 
 
-		HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 1);
+		//HAL_GPIO_WritePin(GPIOF, GPIO_PIN_12, 1);
 		//notif=slaveNotif;
 
 		notif.type=slaveNotif.type;
@@ -96,7 +96,7 @@ void vSlaveswd_Task(void *argumen0t)
 
 		/*Increment TaskTick*/
 		h_global.TaskTick.Swd_Slave++;
-	  HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 0);
+	 // HAL_GPIO_WritePin(GPIOF, GPIO_PIN_12, 0);
 		//osDelay(200);
 
 
@@ -137,7 +137,7 @@ uint8_t bitPlacement = 15;
 uint8_t bufferCtr = 0; */
 
 
-
+BaseType_t xHigherPriorityTaskWoken;
 
 uint8_t JTAGtoSWDSwitchFlag = 0;
 
@@ -194,7 +194,7 @@ SlaveStateTypeDef oldState = SWD_SLAVE_WAIT_FOR_START;
 
 
 
-void Swd_SlaveStateMachineShifter(void)
+__attribute__((optimize("-Ofast"))) void Swd_SlaveStateMachineShifter(void)
 {
 	pinState = (GPIOE->IDR &0x0200) >> 9;
 
@@ -553,7 +553,7 @@ void Swd_SlaveStateMachineShifter(void)
 		case SWD_TURNAROUND_RQ_ACK:	// Switch trigger on next rising edge to FALLING
 			{
 				GPIOE->MODER|=(1<<18); //output mode
-				changeEdgeTrigger(FALLING);
+				changeEdgeTrigger(RISING);
 				State = SWD_ACKNOWLEDGE;
 
 
@@ -566,7 +566,7 @@ void Swd_SlaveStateMachineShifter(void)
 				GPIOE->MODER&= ~(1<<18); // DATA PIN INPUT MODE
 
 
-				State = SwitchToRisingAndSkipEdge(RISING, SWD_TURNAROUND_DAT_RQ, SWD_REQUEST); // chang
+				State = SwitchToRisingAndSkipEdge(FALLING, SWD_TURNAROUND_DAT_RQ, SWD_REQUEST); // chang
 
 
 				break;
@@ -581,7 +581,7 @@ void Swd_SlaveStateMachineShifter(void)
 
 				GPIOE->MODER&= ~(1<<18); // DATA PIN INPUT MODE
 
-				State = SwitchToRisingAndSkipEdge(RISING, SWD_TURNAROUND_ACK_RQ, SWD_REQUEST);
+				State = SwitchToRisingAndSkipEdge(FALLING, SWD_TURNAROUND_ACK_RQ, SWD_REQUEST);
 
 
 				break;
@@ -592,7 +592,7 @@ void Swd_SlaveStateMachineShifter(void)
 				GPIOE -> ODR |= SWD_SLAVE_DATA_Pin;
 				GPIOE->MODER&= ~(1<<18); // DATA PIN INPUT MODE
 
-				State = SwitchToRisingAndSkipEdge(RISING, SWD_TURNAROUND_ACK_DAT, SWD_DATA_TRANSFER);
+				State = SwitchToRisingAndSkipEdge(FALLING, SWD_TURNAROUND_ACK_DAT, SWD_DATA_TRANSFER);
 
 
 				break;
@@ -673,9 +673,9 @@ inline void changeEdgeTrigger(uint8_t newEdge)
  */
 inline SlaveStateTypeDef SwitchToRisingAndSkipEdge(uint8_t newEdge, SlaveStateTypeDef sourceState, SlaveStateTypeDef targetState)
 {
-	changeEdgeTrigger(RISING);
+
 	if (turnAroundSkipCounter == 0)
-	{
+	{   changeEdgeTrigger(newEdge);
 		turnAroundSkipCounter = 1;
 		return sourceState;
 
@@ -699,13 +699,14 @@ inline void sendNotif( notifTypeTypedef notifType, uint32_t val1,uint32_t val2, 
 				//	HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 0);
 
 
-			BaseType_t xHigherPriorityTaskWoken;
-			xHigherPriorityTaskWoken=pdFALSE;
+			 xHigherPriorityTaskWoken=pdFALSE;
 
 			xTaskNotifyFromISR(*swSlave_TaskHandle,0,eNoAction,&xHigherPriorityTaskWoken);
 
 
-			portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
+			//portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
+
+			portYIELD();
 }
 
 /**

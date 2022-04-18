@@ -33,8 +33,9 @@ int main(void)
 
  	HAL_Init();
 
+ 	//TIM6->CTRL = 0;
 
-  //SCB_EnableICache();
+  SCB_EnableICache();
 
 
   /* Configure the system clock */
@@ -157,7 +158,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : SWD_SLAVE_CLK_Pin */
   GPIO_InitStruct.Pin = SWD_SLAVE_CLK_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING; // changed to RISING
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING; // changed to FALLING
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
 

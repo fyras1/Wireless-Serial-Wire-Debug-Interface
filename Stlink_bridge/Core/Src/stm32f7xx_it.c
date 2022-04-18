@@ -170,9 +170,9 @@ void EXTI15_10_IRQHandler(void)
   /*Clear Pending */
   __HAL_GPIO_EXTI_CLEAR_IT(SWD_SLAVE_CLK_Pin);
 
-	//HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 1);
+	HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 1);
    Swd_SlaveStateMachineShifter();
-	//HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 0);
+	HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 0);
 
 
 //  HAL_GPIO_EXTI_IRQHandler(SWD_SLAVE_CLK_Pin);
@@ -188,10 +188,12 @@ void EXTI15_10_IRQHandler(void)
 void TIM6_DAC_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM6_DAC_IRQn 0 */
+	//HAL_GPIO_WritePin(GPIOF, GPIO_PIN_12, 1);
 
   /* USER CODE END TIM6_DAC_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim6);
+ HAL_TIM_IRQHandler(&htim6);
   /* USER CODE BEGIN TIM6_DAC_IRQn 1 */
+	//HAL_GPIO_WritePin(GPIOF, GPIO_PIN_12, 0);
 
   /* USER CODE END TIM6_DAC_IRQn 1 */
 }
