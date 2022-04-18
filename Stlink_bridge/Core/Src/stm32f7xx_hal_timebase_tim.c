@@ -46,13 +46,13 @@ HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority)
   uint32_t              uwPrescalerValue = 0;
   uint32_t              pFLatency;
   /*Configure the TIM6 IRQ priority */
-  HAL_NVIC_SetPriority(TIM6_DAC_IRQn, TickPriority ,0); // CHANGED FROM 0 ********
+  //HAL_NVIC_SetPriority(TIM6_DAC_IRQn, TickPriority ,0); // CHANGED FROM 0 ********
 
   /* Enable the TIM6 global Interrupt */
-  HAL_NVIC_EnableIRQ(TIM6_DAC_IRQn);
+  //HAL_NVIC_EnableIRQ(TIM6_DAC_IRQn);
 
   /* Enable TIM6 clock */
-  __HAL_RCC_TIM6_CLK_ENABLE();
+ // __HAL_RCC_TIM6_CLK_ENABLE();
 
   /* Get clock configuration */
   HAL_RCC_GetClockConfig(&clkconfig, &pFLatency);
