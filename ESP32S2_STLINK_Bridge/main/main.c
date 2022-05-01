@@ -19,6 +19,8 @@ void app_main(void){
     gpio_isr_handler_add(SWD_SLAVE_CLK_Pin, Slave_Clk_ISR_Handler, (void*)SWD_SLAVE_CLK_Pin);
 
 
+    vCommontask_StartApk();
+
 
     while (1)
     {

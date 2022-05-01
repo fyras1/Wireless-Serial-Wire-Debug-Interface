@@ -5,6 +5,35 @@
  *      Author: firas
  */
 
-
+#include <stdio.h>
 #include "esp_common.h"
 #include "main.h"
+
+
+
+
+TaskHandle_t swMaster_TaskHandle;
+TaskHandle_t swSlave_TaskHandle;
+
+notificationStruct slaveNotif,masterNotif;
+
+
+void vCommontask_StartApk(void )
+{
+
+
+
+    /*Init global handler*/
+
+
+	/* Creat Supervisor Task */
+   xTaskCreate(vSlaveswd_Task,"SLAVE",500U ,NULL,(tskIDLE_PRIORITY+4U), &swSlave_TaskHandle );
+
+
+
+   xTaskCreate(vMasterswd_Task,"MASTER",500U ,NULL,(tskIDLE_PRIORITY+4U), &swMaster_TaskHandle );
+
+
+
+
+}
