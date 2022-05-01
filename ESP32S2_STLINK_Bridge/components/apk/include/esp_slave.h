@@ -9,5 +9,6 @@
 #define COMPONENTS_APK_INCLUDE_ESP_SLAVE_H_
 
 
+void Swd_SlaveStateMachineShifter(void);
 
 #endif /* COMPONENTS_APK_INCLUDE_ESP_SLAVE_H_ */
