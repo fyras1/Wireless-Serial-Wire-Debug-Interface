@@ -156,6 +156,7 @@ static void MX_GPIO_Init(void)
 
   HAL_GPIO_Init(SWD_SLAVE_DATA_GPIO_Port, &GPIO_InitStruct);
 
+
   /*Configure GPIO pin : SWD_SLAVE_CLK_Pin */
   GPIO_InitStruct.Pin = SWD_SLAVE_CLK_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING; // changed to FALLING
