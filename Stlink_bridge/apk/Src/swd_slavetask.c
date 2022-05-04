@@ -221,6 +221,7 @@ __attribute__((optimize("-Ofast"))) void Swd_SlaveStateMachineShifter(void)
 
 		case SWD_LINE_RESET_1:
 			{
+
 				//increase reset 1 bits if 1
 
 				if (pinState == 1)
@@ -240,6 +241,8 @@ __attribute__((optimize("-Ofast"))) void Swd_SlaveStateMachineShifter(void)
 						//generic state machine error handler call to return to a preivous state (SWD_SLAVE_WAIT_FOR_START);
 						State = unexpected_error_handler(SWD_LINE_RESET_1);
 				}
+
+
 
 				break;
 			}
@@ -492,7 +495,7 @@ __attribute__((optimize("-Ofast"))) void Swd_SlaveStateMachineShifter(void)
 			{
 				//data pin already in output mode from rq_ack_turnaournd
 				/*condition is entered in case we have data from master (read request)*/
-				if (dataReceived)
+				if (dataReceived && dataCounter<32)
 				{
 					uint8_t bit = (slaveNotif.value1>>(31-dataCounter))&0x01;
 					GPIOE->ODR = ((GPIOE->ODR & ~(SWD_SLAVE_DATA_Pin)) | ( (bit) << 9)); //write bit to swdio

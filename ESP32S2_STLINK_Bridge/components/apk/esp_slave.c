@@ -19,8 +19,12 @@ void vSlaveswd_Task(void *argumen0t)
 
 	while (1)
 	{
-
+		//gpio_set_level(DEBUG_PIN_1,1);
+		//gpio_set_level(DEBUG_PIN_1,0);
 		xTaskNotifyWait(0x00, 0xffffffff, NULL, portMAX_DELAY);
+
+
+		gpio_set_level(DEBUG_PIN_2,1);
 
 
 		//HAL_GPIO_WritePin(GPIOF, GPIO_PIN_12, 1);
@@ -84,6 +88,7 @@ void vSlaveswd_Task(void *argumen0t)
 
 	 // HAL_GPIO_WritePin(GPIOF, GPIO_PIN_12, 0);
 		//osDelay(200);
+		gpio_set_level(DEBUG_PIN_2,0);
 
 
 	}
@@ -184,11 +189,14 @@ __attribute__((optimize("-Ofast"))) void Swd_SlaveStateMachineShifter(void)
 {
 	//pinState = (GPIOE->IDR &0x0200) >> 9;
 
-	gpio_get_level(SWD_SLAVE_DATA_Pin);
+
+	//gpio_set_level(DEBUG_PIN_1,1);
+	pinState=gpio_get_level(SWD_SLAVE_DATA_Pin);
 
 
 
-	nbexti++;
+
+	//nbexti++;
 
 	switch (State)
 	{
@@ -197,6 +205,9 @@ __attribute__((optimize("-Ofast"))) void Swd_SlaveStateMachineShifter(void)
 
 		case SWD_SLAVE_WAIT_FOR_START:
 			{
+
+
+
 				//wait for first bit to start line reset
 				if (pinState == 1)
 				{
@@ -209,6 +220,9 @@ __attribute__((optimize("-Ofast"))) void Swd_SlaveStateMachineShifter(void)
 
 		case SWD_LINE_RESET_1:
 			{
+
+				//gpio_set_level(DEBUG_PIN_1,1);
+
 				//increase reset 1 bits if 1
 
 				if (pinState == 1)
@@ -229,11 +243,15 @@ __attribute__((optimize("-Ofast"))) void Swd_SlaveStateMachineShifter(void)
 						State = unexpected_error_handler(SWD_LINE_RESET_1);
 				}
 
+			//	gpio_set_level(DEBUG_PIN_1,0);
+
+
 				break;
 			}
 
 		case SWD_JTAG_SELECT:
 			{
+				//gpio_set_level(DEBUG_PIN_2,1);
 
 				SWDseq = (SWDseq << 1) | pinState;
 				seqCounter++;
@@ -255,11 +273,14 @@ __attribute__((optimize("-Ofast"))) void Swd_SlaveStateMachineShifter(void)
 				{
 
 				}
+				//gpio_set_level(DEBUG_PIN_2,0);
+
 				break;
 			}
 
 		case SWD_LINE_RESET_2:
-			{
+			{				//gpio_set_level(DEBUG_PIN_2,1);
+
 				if (pinState == 1)
 					nbBitsRst2++;
 				else //if (pinState == 0)
@@ -278,11 +299,15 @@ __attribute__((optimize("-Ofast"))) void Swd_SlaveStateMachineShifter(void)
 						State = unexpected_error_handler(SWD_LINE_RESET_2);
 				}
 
+			//	gpio_set_level(DEBUG_PIN_2,0);
+
+
 				break;
 			}
 
 		case SWD_WAIT_FOR_REQUEST:
-			{
+			{				//gpio_set_level(DEBUG_PIN_2,1);
+
 				if (pinState == 1)
 				{
 					State = SWD_REQUEST;
@@ -293,12 +318,15 @@ __attribute__((optimize("-Ofast"))) void Swd_SlaveStateMachineShifter(void)
 				{
 					//do nothing and wait for next edge
 				}
+				//gpio_set_level(DEBUG_PIN_2,0);
 
 				break;
 			}
 
 		case SWD_REQUEST:
 			{
+			//	gpio_set_level(DEBUG_PIN_2,1);
+
 //				HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 1);
 //				HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 0);
 
@@ -364,6 +392,7 @@ __attribute__((optimize("-Ofast"))) void Swd_SlaveStateMachineShifter(void)
 
 					}
 				}
+			//	gpio_set_level(DEBUG_PIN_2,0);
 
 				break;
 			}
@@ -480,12 +509,14 @@ __attribute__((optimize("-Ofast"))) void Swd_SlaveStateMachineShifter(void)
 			{
 				//data pin already in output mode from rq_ack_turnaournd
 				/*condition is entered in case we have data from master (read request)*/
-				if (dataReceived)
+				if (dataReceived && dataCounter<32)
 				{
 					uint8_t bit = (slaveNotif.value1>>(31-dataCounter))&0x01;
 					//GPIOE->ODR = ((GPIOE->ODR & ~(SWD_SLAVE_DATA_Pin)) | ( (bit) << 9)); //write bit to swdio
 					gpio_set_level(SWD_SLAVE_DATA_Pin, bit);
 					dataParity^=bit;
+					gpio_set_level(DEBUG_PIN_3,dataParity);
+					gpio_set_level(DEBUG_PIN_3,0);
 
 					//if (dataCounter==31) //we wrote the last bit of the data response
 						//dataReceived=0;
@@ -501,6 +532,8 @@ __attribute__((optimize("-Ofast"))) void Swd_SlaveStateMachineShifter(void)
 					{
 						dataReceived=0;
 						//GPIOE->ODR = ((GPIOE->ODR & ~(SWD_SLAVE_DATA_Pin)) | ( (dataParity) << 9));
+
+
 						gpio_set_level(SWD_SLAVE_DATA_Pin, dataParity);
 
 						dataParity=0;
@@ -591,7 +624,11 @@ __attribute__((optimize("-Ofast"))) void Swd_SlaveStateMachineShifter(void)
 
 				break;
 			}
+
+
 	}
+	//gpio_set_level(DEBUG_PIN_1,0);
+
 
 
 //    if (State != oldState || State==SWD_REQUEST) {
@@ -700,13 +737,17 @@ inline void sendNotif( notifTypeTypedef notifType, uint32_t val1,uint32_t val2, 
 
 
 			 xHigherPriorityTaskWoken=pdFALSE;
+			//	gpio_set_level(DEBUG_PIN_1,1);
 
 			xTaskNotifyFromISR(*swSlave_TaskHandle,0,eNoAction,&xHigherPriorityTaskWoken);
+		//	gpio_set_level(DEBUG_PIN_1,0);
 
 
 			//portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
 
-			portYIELD();
+			//portYIELD();
+		     portYIELD_FROM_ISR ();
+
 }
 
 /**

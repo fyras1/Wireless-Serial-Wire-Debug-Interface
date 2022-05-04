@@ -13,6 +13,14 @@
 #include "esp_system.h"
 #include "esp_event.h"
 #include "driver/gpio.h"
+#include "esp_wifi.h"
+#include "esp_system.h"
+#include "esp_netif.h"
+
+#include "lwip/err.h"
+#include "lwip/sockets.h"
+#include "lwip/sys.h"
+#include <lwip/netdb.h>
 
 #include "esp_slave.h"
 #include "esp_common.h"

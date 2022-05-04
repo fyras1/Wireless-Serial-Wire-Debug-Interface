@@ -34,6 +34,7 @@ void vMasterswd_Task(void * argument)
 	while(1)
 	{
 		xTaskNotifyWait(0x00, 0xFFFFFFFFUL, NULL, portMAX_DELAY);
+		gpio_set_level(DEBUG_PIN_3,1);
 
 	   // HAL_GPIO_WritePin(GPIOF, GPIO_PIN_12, 1);
 
@@ -161,6 +162,8 @@ void vMasterswd_Task(void * argument)
 
         //osDelay(200);
        // HAL_GPIO_WritePin(GPIOF, GPIO_PIN_12, 0);
+		gpio_set_level(DEBUG_PIN_3,0);
+
 		}
 
 
@@ -277,6 +280,7 @@ inline void printReset(uint32_t SWDorJTAG_val)
 {
 
 	//HAL_GPIO_WritePin(GPIOD, SWD_MASTER_DATA_Pin,1 );
+   	gpio_set_direction(SWD_MASTER_CLK_Pin, GPIO_MODE_OUTPUT);
 
 	gpio_set_level(SWD_MASTER_DATA_Pin,1);
 
@@ -425,7 +429,7 @@ inline void swdio_Read(uint32_t* response)
 	swclk_reset();
 
 	//uint8_t bit = (GPIOD->IDR &SWD_MASTER_DATA_Pin) >> 13;
-	uint8_t bit =gpio_get_level(SWD_MASTER_CLK_Pin);
+	uint8_t bit =gpio_get_level(SWD_MASTER_DATA_Pin);
 	*response=((*response)<<1)|bit;
 
 	swclk_set();

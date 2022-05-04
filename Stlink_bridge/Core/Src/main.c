@@ -8,18 +8,27 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+//#include "stm32f7xx_hal_uart.h"
+
 
 
 /* Private includes ----------------------------------------------------------*/
 
-osThreadId defaultTaskHandle;
+UART_HandleTypeDef huart2;
+DMA_HandleTypeDef hdma_usart2_rx;
+DMA_HandleTypeDef hdma_usart2_tx;
+
+/* USER CODE BEGIN PV */
+uint8_t txBuff[72];
+uint8_t rxBuff[72];
 
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 void StartDefaultTask(void const * argument);
-
+static void MX_DMA_Init(void);
+static void MX_USART2_UART_Init(void);
 
 
 /**
@@ -46,10 +55,16 @@ int main(void)
   MX_GPIO_Init();
 
 
-  /* Run the apk */
+  MX_DMA_Init();
+  MX_USART2_UART_Init();
 
+  /* Run the apk */
+  //HAL_UART_Transmit_DMA (&huart2,txBuff, 3);
 
   vCommontask_StartApk();
+
+
+
 
   while (1)
   {
@@ -58,8 +73,74 @@ int main(void)
   /* USER CODE END 3 */
 }
 
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+    //HAL_UART_Transmit(&huart2, UART1_rxBuffer, 12, 100);
+    HAL_UART_Receive_DMA(&huart2, rxBuff, 3);
+}
 
 
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+    //HAL_UART_Transmit(&huart2, UART1_rxBuffer, 12, 100);
+    HAL_UART_Transmit_DMA(&huart2, txBuff, 3);
+}
+
+
+
+/**
+  * @brief USART2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART2_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART2_Init 0 */
+
+  /* USER CODE END USART2_Init 0 */
+
+  /* USER CODE BEGIN USART2_Init 1 */
+
+  /* USER CODE END USART2_Init 1 */
+  huart2.Instance = USART2;
+  huart2.Init.BaudRate = 115200;
+  huart2.Init.WordLength = UART_WORDLENGTH_8B;
+  huart2.Init.StopBits = UART_STOPBITS_1;
+  huart2.Init.Parity = UART_PARITY_NONE;
+  huart2.Init.Mode = UART_MODE_TX_RX;
+  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart2.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  if (HAL_UART_Init(&huart2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART2_Init 2 */
+
+  /* USER CODE END USART2_Init 2 */
+
+}
+
+/**
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void)
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Stream5_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
+  /* DMA1_Stream6_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Stream6_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Stream6_IRQn);
+
+}
 
 
 

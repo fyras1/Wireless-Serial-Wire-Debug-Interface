@@ -27,11 +27,11 @@ void vCommontask_StartApk(void )
 
 
 	/* Creat Supervisor Task */
-   xTaskCreate(vSlaveswd_Task,"SLAVE",500U ,NULL,(tskIDLE_PRIORITY+4U), &swSlave_TaskHandle );
+   xTaskCreate(vSlaveswd_Task,"SLAVE",1000U ,NULL,(tskIDLE_PRIORITY+4U), &swSlave_TaskHandle );
 
 
 
-   xTaskCreate(vMasterswd_Task,"MASTER",500U ,NULL,(tskIDLE_PRIORITY+4U), &swMaster_TaskHandle );
+   xTaskCreate(vMasterswd_Task,"MASTER",1000U ,NULL,(tskIDLE_PRIORITY+4U), &swMaster_TaskHandle );
 
 
 
