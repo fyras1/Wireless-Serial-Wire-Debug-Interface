@@ -1,14 +1,16 @@
 #include "freertos/FreeRTOS.h"
-#include "esp_wifi.h"
+//#include "esp_wifi.h"
 #include "esp_system.h"
 #include "esp_event.h"
 #include "driver/gpio.h"
 #include "main.h"
+#include "esp_attr.h"
+
 
 
 
 static void IRAM_ATTR Slave_Clk_ISR_Handler(void* arg);
-void wifi_init_softap(void);
+//void wifi_init_softap(void);
 
 
 
@@ -17,7 +19,7 @@ void app_main(void){
 
     gpio_init();
  vCommontask_StartApk();
-    gpio_install_isr_service(ESP_INTR_FLAG_IRAM); //create isr for gpio
+    gpio_install_isr_service(ESP_INTR_FLAG_IRAM  ); //create isr for gpio
 
     //add ISR hander for SWD slave CLK pin
 	gpio_set_level(SWD_MASTER_CLK_Pin,1);
