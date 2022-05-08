@@ -9,7 +9,7 @@
 #define COMPONENTS_APK_INCLUDE_ESP_SLAVE_H_
 
 
-#include "esp_common.h"
+#include "common.h"
 
  typedef enum
   {  //SWD_SELF_ACK_WAIT,

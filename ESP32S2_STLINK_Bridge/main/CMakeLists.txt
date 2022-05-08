@@ -1,5 +1,5 @@
 # Edit following two lines to set component requirements (see docs)
-set(COMPONENT_REQUIRES apk )
+set(COMPONENT_REQUIRES common slave master )
 set(COMPONENT_PRIV_REQUIRES  )
 
 set(COMPONENT_SRCS "main.c")

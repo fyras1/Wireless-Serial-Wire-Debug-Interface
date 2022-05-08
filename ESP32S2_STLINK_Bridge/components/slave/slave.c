@@ -6,12 +6,13 @@
  */
 
 #include "main.h"
-#include "esp_common.h"
+#include "common.h"
 
 
 uint8_t dataReceived=0;
 uint8_t dataWriteFinish=1;
 uint8_t errFlagSlave=0;
+uint8_t lineResetFinish=0;
 
 void vSlaveswd_Task(void *argumen0t)
 {
@@ -81,6 +82,11 @@ void vSlaveswd_Task(void *argumen0t)
 			{
 				dataWriteFinish=1;
 				break;
+			}
+
+			case LINE_RESET_FROM_MASTER:
+			{
+				lineResetFinish=1;
 			}
 		}
 

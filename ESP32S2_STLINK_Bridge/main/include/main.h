@@ -22,9 +22,9 @@
 #include "lwip/sys.h"
 #include <lwip/netdb.h>
 
-#include "esp_slave.h"
-#include "esp_common.h"
-#include "esp_master.h"
+#include "slave.h"
+#include "common.h"
+#include "master.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
