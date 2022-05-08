@@ -29,7 +29,8 @@
 	 DATA_FROM_MASTER,
 	 DATA_FROM_ISR,
 	 LINE_RESET_FULL,
-	 DATA_WRITE_FINISH
+	 DATA_WRITE_FINISH,
+	 LINE_RESET_FINISH
  }notifTypeTypedef;
 
  typedef struct ns{

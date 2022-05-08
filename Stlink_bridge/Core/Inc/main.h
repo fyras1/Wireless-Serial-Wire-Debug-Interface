@@ -65,17 +65,24 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define LED_GREEN_Pin GPIO_PIN_0
 #define LED_GREEN_GPIO_Port GPIOB
+
 #define SWD_SLAVE_DATA_Pin GPIO_PIN_9
 #define SWD_SLAVE_DATA_GPIO_Port GPIOE
+
 #define SWD_SLAVE_CLK_Pin GPIO_PIN_11
 #define SWD_SLAVE_CLK_GPIO_Port GPIOE
+
 #define SWD_SLAVE_CLK_EXTI_IRQn EXTI15_10_IRQn
+
 #define LED_RED_Pin GPIO_PIN_14
 #define LED_RED_GPIO_Port GPIOB
+
 #define SWD_MASTER_CLk_Pin GPIO_PIN_12
 #define SWD_MASTER_CLk_GPIO_Port GPIOD
+
 #define SWD_MASTER_DATA_Pin GPIO_PIN_13
 #define SWD_MASTER_DATA_GPIO_Port GPIOD
+
 #define LED_BLUE_Pin GPIO_PIN_7
 #define LED_BLUE_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */

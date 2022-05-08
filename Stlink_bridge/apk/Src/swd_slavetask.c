@@ -26,6 +26,7 @@
 uint8_t dataReceived=0;
 uint8_t dataWriteFinish=1;
 uint8_t errFlagSlave=0;
+uint8_t lineResetFinish=0;
 
 void vSlaveswd_Task(void *argumen0t)
 {
@@ -90,6 +91,11 @@ void vSlaveswd_Task(void *argumen0t)
 			case DATA_WRITE_FINISH:
 			{
 				dataWriteFinish=1;
+				break;
+			}
+			case LINE_RESET_FINISH:
+			{
+				lineResetFinish=1;
 				break;
 			}
 		}
