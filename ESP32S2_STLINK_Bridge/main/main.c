@@ -22,7 +22,8 @@ uart_port_t uart_num = UART_NUM_1;
 
 uart_isr_handle_t uart_isr_handle;
 
-uint8_t data[50];
+uint8_t rxData[10];
+uint8_t txData[10];
 int length = 0;
 
 void app_main(void){
@@ -49,9 +50,27 @@ void app_main(void){
 
     while (1)
     {
-    	length = uart_read_bytes(uart_num, data, 3, portMAX_DELAY);
+    	length = uart_read_bytes(uart_num, rxData, 9, portMAX_DELAY);
+    	 notificationStruct temp;
+    		temp.type=(notifTypeTypedef)rxData[0];
 
-        uart_write_bytes(uart_num, (const char*)data, length);
+    		temp.value1=0;
+    		temp.value2=0;
+
+    		temp.value1=(rxData[1]<<24) + (rxData[2]<<16) +( rxData[3]<<8) + (rxData[4]);
+    		temp.value2=(rxData[5]<<24) + (rxData[6]<<16) + (rxData[7]<<8) + (rxData[8]);
+
+    		masterNotif.type=temp.type;
+    		masterNotif.value1=temp.value1;
+    		masterNotif.value2=temp.value2;
+
+    		BaseType_t  pxHigherPriorityTaskWoken=pdFALSE;
+    		xTaskNotifyFromISR(swMaster_TaskHandle,0,eNoAction,&pxHigherPriorityTaskWoken);
+    		portYIELD();
+
+
+    	txData[0]=6;
+        uart_write_bytes(uart_num, (const char*)txData, length);
    // vTaskDelay(1000);
 
 
@@ -73,7 +92,7 @@ void uart_init(void)
 {
 
 	    uart_config_t uart_config = {
-	        .baud_rate = 115200,
+	        .baud_rate = 115200*10,
 	        .data_bits = UART_DATA_8_BITS,
 	        .parity = UART_PARITY_DISABLE,
 	        .stop_bits = UART_STOP_BITS_1,

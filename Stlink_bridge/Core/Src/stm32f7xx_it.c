@@ -192,12 +192,12 @@ void EXTI15_10_IRQHandler(void)
 void TIM6_DAC_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM6_DAC_IRQn 0 */
-	HAL_GPIO_WritePin(GPIOF, GPIO_PIN_12, 1);
+	//HAL_GPIO_WritePin(GPIOF, GPIO_PIN_12, 1);
 
   /* USER CODE END TIM6_DAC_IRQn 0 */
  HAL_TIM_IRQHandler(&htim6);
   /* USER CODE BEGIN TIM6_DAC_IRQn 1 */
-	HAL_GPIO_WritePin(GPIOF, GPIO_PIN_12, 0);
+	//HAL_GPIO_WritePin(GPIOF, GPIO_PIN_12, 0);
 
   /* USER CODE END TIM6_DAC_IRQn 1 */
 }

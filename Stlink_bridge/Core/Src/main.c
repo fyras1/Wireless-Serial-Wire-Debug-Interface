@@ -14,13 +14,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 
-UART_HandleTypeDef huart2;
-DMA_HandleTypeDef hdma_usart2_rx;
-DMA_HandleTypeDef hdma_usart2_tx;
 
-/* USER CODE BEGIN PV */
-uint8_t txBuff[72];
-uint8_t rxBuff[72];
 
 
 /* Private function prototypes -----------------------------------------------*/
@@ -39,8 +33,8 @@ int main(void)
 {
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-
  	HAL_Init();
+	//NVIC_PriorityGroupConfig( NVIC_PriorityGroup_4 );
 
  	//TIM6->CTRL = 0;
 
@@ -58,6 +52,8 @@ int main(void)
   MX_DMA_Init();
   MX_USART2_UART_Init();
 
+  HAL_UART_Receive_DMA (&huart2,rxBuff, 9);
+
   /* Run the apk */
   //HAL_UART_Transmit_DMA (&huart2,txBuff, 3);
 
@@ -74,16 +70,41 @@ int main(void)
 }
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
-{
+{	//HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 1);
+//HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 0);
+
+
     //HAL_UART_Transmit(&huart2, UART1_rxBuffer, 12, 100);
-    HAL_UART_Receive_DMA(&huart2, rxBuff, 3);
+   // HAL_UART_Receive_DMA(&huart2, rxBuff, 3);
 }
 
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
     //HAL_UART_Transmit(&huart2, UART1_rxBuffer, 12, 100);
-    HAL_UART_Transmit_DMA(&huart2, txBuff, 3);
+   // HAL_UART_Transmit_DMA(&huart2, txBuff, 3);
+
+	HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 1);
+	notificationStruct temp;
+	temp.type=(notifTypeTypedef)rxBuff[0];
+
+	temp.value1=0;
+	temp.value2=0;
+
+	temp.value1=(rxBuff[1]<<24) + (rxBuff[2]<<16) +( rxBuff[3]<<8) + (rxBuff[4]);
+	temp.value2=(rxBuff[5]<<24) + (rxBuff[6]<<16) + (rxBuff[7]<<8) + (rxBuff[8]);
+
+
+
+
+
+  	sendNotif(temp.type, temp.value1, temp.value2, &swSlave_TaskHandle);
+  //	sendNotif((notifTypeTypedef)LINE_RESET_FINISH, 5, 5, &swSlave_TaskHandle);
+
+  	HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 0);
+    HAL_UART_Receive_DMA (&huart2,rxBuff, 9);
+
+
 }
 
 
@@ -104,7 +125,7 @@ static void MX_USART2_UART_Init(void)
 
   /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
-  huart2.Init.BaudRate = 115200;
+  huart2.Init.BaudRate = 115200*10;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;
@@ -134,10 +155,10 @@ static void MX_DMA_Init(void)
 
   /* DMA interrupt init */
   /* DMA1_Stream5_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
   /* DMA1_Stream6_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream6_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(DMA1_Stream6_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream6_IRQn);
 
 }

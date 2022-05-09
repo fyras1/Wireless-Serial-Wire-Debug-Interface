@@ -27,6 +27,7 @@ uint8_t dataReceived=0;
 uint8_t dataWriteFinish=1;
 uint8_t errFlagSlave=0;
 uint8_t lineResetFinish=0;
+uint8_t taskIsActive=0;
 
 void vSlaveswd_Task(void *argumen0t)
 {
@@ -37,8 +38,7 @@ void vSlaveswd_Task(void *argumen0t)
 
 		xTaskNotifyWait(0x00, 0xffffffff, NULL, portMAX_DELAY);
 
-
-		//HAL_GPIO_WritePin(GPIOF, GPIO_PIN_12, 1);
+		HAL_GPIO_WritePin(GPIOF, GPIO_PIN_12, 1);
 		//notif=slaveNotif;
 
 		notif.type=slaveNotif.type;
@@ -51,15 +51,29 @@ void vSlaveswd_Task(void *argumen0t)
 
 
 
+		   txBuff[0]=notif.type;
+
+		   txBuff[1]=(notif.value1>>24) & 0xFF;
+		   txBuff[2]=(notif.value1>>16) & 0xFF;
+		   txBuff[3]=(notif.value1>>8) & 0xFF;
+		   txBuff[4]=(notif.value1>>0) & 0xFF;
+
+		   txBuff[5]=(notif.value2>>24) & 0xFF;
+		   txBuff[6]=(notif.value2>>16) & 0xFF;
+		   txBuff[7]=(notif.value2>>8) & 0xFF;
+		   txBuff[8]=(notif.value2>>0) & 0xFF;
+
+
+
 
 
 
 
 		switch(notif.type){
 			case REQUEST:
-			{
-			//    masterNotif=notif;
-				xTaskNotify(swMaster_TaskHandle,0,eNoAction);
+			{ HAL_UART_Transmit_DMA (&huart2,txBuff, 9);
+			    masterNotif=notif;
+				//xTaskNotify(swMaster_TaskHandle,0,eNoAction);
 			 break;
 			}
 
@@ -83,8 +97,10 @@ void vSlaveswd_Task(void *argumen0t)
 
 			case LINE_RESET_FULL:
 			{
-			  //  masterNotif=notif;
-				xTaskNotify(swMaster_TaskHandle,0,eNoAction);
+			   // masterNotif=notif;
+				HAL_UART_Transmit_DMA (&huart2,txBuff, 9);
+				// xTaskNotify(swMaster_TaskHandle,0,eNoAction);
+
 				break;
 			}
 
@@ -99,6 +115,7 @@ void vSlaveswd_Task(void *argumen0t)
 				break;
 			}
 		}
+		HAL_GPIO_WritePin(GPIOF, GPIO_PIN_12, 0);
 
 		/*Increment TaskTick*/
 		h_global.TaskTick.Swd_Slave++;
@@ -143,7 +160,7 @@ uint8_t bitPlacement = 15;
 uint8_t bufferCtr = 0; */
 
 
-BaseType_t xHigherPriorityTaskWoken;
+//BaseType_t xHigherPriorityTaskWoken;
 
 uint8_t JTAGtoSWDSwitchFlag = 0;
 
@@ -204,6 +221,7 @@ __attribute__((optimize("-Ofast"))) void Swd_SlaveStateMachineShifter(void)
 {
 	pinState = (GPIOE->IDR &0x0200) >> 9;
 
+	HAL_GPIO_WritePin(GPIOF, GPIO_PIN_12, 1);
 
 
 	nbexti++;
@@ -362,7 +380,7 @@ __attribute__((optimize("-Ofast"))) void Swd_SlaveStateMachineShifter(void)
 						}
 						else{
 							retAckWait=1; // if no data returned from master, send ack wait and repeat
-							if (!requestPending && dataWriteFinish)
+							if (!requestPending && dataWriteFinish && lineResetFinish )
 								{
 								requestPending=1;
 								sendNotif( REQUEST, rq,0,  &swSlave_TaskHandle ); // NOTE TO SELF: change later to run only once
@@ -608,6 +626,11 @@ __attribute__((optimize("-Ofast"))) void Swd_SlaveStateMachineShifter(void)
 			}
 	}
 
+	HAL_GPIO_WritePin(GPIOF, GPIO_PIN_12, 0);
+
+
+
+
 
 //    if (State != oldState || State==SWD_REQUEST) {
 //      StateBuffer[stateBufferCounter]=State;
@@ -708,7 +731,7 @@ inline void sendNotif( notifTypeTypedef notifType, uint32_t val1,uint32_t val2, 
 				//	HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 0);
 
 
-			 xHigherPriorityTaskWoken=pdFALSE;
+			BaseType_t xHigherPriorityTaskWoken=pdFALSE;
 
 			xTaskNotifyFromISR(*swSlave_TaskHandle,0,eNoAction,&xHigherPriorityTaskWoken);
 

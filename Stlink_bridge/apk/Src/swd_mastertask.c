@@ -72,7 +72,8 @@ void vMasterswd_Task(void * argument)
 			printReset(masterNotif.value1);
 
 		   	slaveNotif.type=LINE_RESET_FINISH;
-			    	slaveNotif.value1=0;
+			    	//slaveNotif.value1=0;
+			    //	slaveNotif.value2=0;
 					//HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 0);
 
 			    	xTaskNotify(swSlave_TaskHandle,0,eNoAction);

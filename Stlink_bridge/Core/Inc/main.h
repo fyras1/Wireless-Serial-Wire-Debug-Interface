@@ -42,7 +42,13 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
+UART_HandleTypeDef huart2;
+DMA_HandleTypeDef hdma_usart2_rx;
+DMA_HandleTypeDef hdma_usart2_tx;
 
+/* USER CODE BEGIN PV */
+uint8_t txBuff[9];
+uint8_t rxBuff[9];
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
