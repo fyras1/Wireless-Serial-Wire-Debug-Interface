@@ -72,7 +72,7 @@ void vSlaveswd_Task(void *argumen0t)
 		switch(notif.type){
 			case REQUEST:
 			{ HAL_UART_Transmit_DMA (&huart2,txBuff, 9);
-			    masterNotif=notif;
+			   // masterNotif=notif;
 				//xTaskNotify(swMaster_TaskHandle,0,eNoAction);
 			 break;
 			}
@@ -85,7 +85,8 @@ void vSlaveswd_Task(void *argumen0t)
 			case DATA_FROM_ISR:
 			{
 			//    masterNotif=notif;
-				xTaskNotify(swMaster_TaskHandle,0,eNoAction);
+				HAL_UART_Transmit_DMA (&huart2,txBuff, 9);
+			//	xTaskNotify(swMaster_TaskHandle,0,eNoAction);
 				break;
 			}
 
