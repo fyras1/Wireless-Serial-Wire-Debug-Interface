@@ -6,13 +6,14 @@
 #include "driver/uart.h"
 #include "freertos/event_groups.h"
 #include "nvs_flash.h"
+#include <esp_log.h>
 
 
 #include "main.h"
 #include "esp_attr.h"
 
 
-#define PORT 8005
+#define PORT 8001
 
 #define EXAMPLE_ESP_WIFI_SSID      "bridge_master_AP"
 #define EXAMPLE_ESP_WIFI_PASS      "123456789"
@@ -26,7 +27,7 @@ void uart_callback(void);
 static void event_handler(void* arg, esp_event_base_t event_base,
                                 int32_t event_id, void* event_data);
 
-void socketClient(void *ignore) ;
+void socketClient() ;
 
 void wifi_init_sta(void);
 
@@ -42,7 +43,10 @@ uint8_t rxData[10];
 uint8_t txData[10];
 int length = 0;
 
+int sock;
+
 static int s_retry_num = 0;
+static char tag[] = "socketClient";
 
 
 
@@ -52,6 +56,7 @@ void app_main(void){
     gpio_init();
 
 
+	ESP_LOGD(tag, "socket: rc:");
 
     uart_init();
 
@@ -70,7 +75,8 @@ void app_main(void){
     while (1)
     {
     	length = uart_read_bytes(uart_num, rxData, 9, portMAX_DELAY);
-    	 notificationStruct temp;
+
+    	/*notificationStruct temp;
     		temp.type=(notifTypeTypedef)rxData[0];
 
     		temp.value1=0;
@@ -81,41 +87,49 @@ void app_main(void){
 
     		masterNotif.type=temp.type;
     		masterNotif.value1=temp.value1;
-    		masterNotif.value2=temp.value2;
+    		masterNotif.value2=temp.value2;*/
 
-    		BaseType_t  pxHigherPriorityTaskWoken=pdFALSE;
-    		xTaskNotifyFromISR(swMaster_TaskHandle,0,eNoAction,&pxHigherPriorityTaskWoken);
-    		portYIELD();
+    	send(sock,rxData,9,0);
+
+    	recv(sock,txData,9,0);
+
+    		//BaseType_t  pxHigherPriorityTaskWoken=pdFALSE;
+    		//xTaskNotifyFromISR(swMaster_TaskHandle,0,eNoAction,&pxHigherPriorityTaskWoken);
+    	//	portYIELD();
 
 
-    	txData[0]=6;
+    	//txData[0]=6;
         uart_write_bytes(uart_num, (const char*)txData, length);
    // vTaskDelay(1000);
 
 
     }
 
+}
+
     /***************************** Socket Client ********************/
-    void socketClient(void) {
-    	int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    void socketClient() {
+    	 sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
     	struct sockaddr_in serverAddress;
     	serverAddress.sin_family = AF_INET;
-    	inet_pton(AF_INET, "192.168.2.1", &serverAddress.sin_addr.s_addr);
+    	inet_pton(AF_INET, "192.168.2.1", &serverAddress.sin_addr.s_addr); //change ip here 192.168.2.1
     	serverAddress.sin_port = htons(PORT); //CHAGE
 
-    	int rc = connect(sock, (struct sockaddr *)&serverAddress, sizeof(struct sockaddr_in));
+    	 connect(sock, (struct sockaddr *)&serverAddress, sizeof(struct sockaddr_in));
 
-    	char *data = "Hello world";
-    	rc = send(sock, data, strlen(data), 0);
 
-    	rc = close(sock);
-
-    	vTaskDelete(NULL);
+//    	char *data = "Hello world";
+//    	rc = send(sock, data, strlen(data), 0);
+//
+//
+//    	rc = close(sock);
+//
+//    	vTaskDelete(NULL);
     }
 
 
-}
+
 
 
 
@@ -126,7 +140,7 @@ void uart_init(void)
 {
 
 	    uart_config_t uart_config = {
-	        .baud_rate = 115200*10,
+	        .baud_rate = 115200, //CHANGE
 	        .data_bits = UART_DATA_8_BITS,
 	        .parity = UART_PARITY_DISABLE,
 	        .stop_bits = UART_STOP_BITS_1,
@@ -194,10 +208,7 @@ void wifi_init_sta(void)
         .sta = {
             .ssid = EXAMPLE_ESP_WIFI_SSID,
             .password = EXAMPLE_ESP_WIFI_PASS,
-            /* Setting a password implies station will connect to all security modes including WEP/WPA.
-             * However these modes are deprecated and not advisable to be used. Incase your Access point
-             * doesn't support WPA2, these mode can be enabled by commenting below line */
-	  //   .threshold.authmode = ESP_WIFI_SCAN_AUTH_MODE_THRESHOLD,
+
         },
     };
   esp_wifi_set_mode(WIFI_MODE_STA) ;
@@ -205,23 +216,21 @@ void wifi_init_sta(void)
     esp_wifi_start();
 
 
-    /* Waiting until either the connection is established (WIFI_CONNECTED_BIT) or connection failed for the maximum
-     * number of re-tries (WIFI_FAIL_BIT). The bits are set by event_handler() (see above) */
+
     EventBits_t bits = xEventGroupWaitBits(s_wifi_event_group,
             WIFI_CONNECTED_BIT | WIFI_FAIL_BIT,
             pdFALSE,
             pdFALSE,
             portMAX_DELAY);
 
-    /* xEventGroupWaitBits() returns the bits before the call returned, hence we can test which event actually
-     * happened. */
-    if (bits & WIFI_CONNECTED_BIT) {
 
-    } else if (bits & WIFI_FAIL_BIT) {
-
-    } else {
-
-    }
+//    if (bits & WIFI_CONNECTED_BIT) {
+//
+//    } else if (bits & WIFI_FAIL_BIT) {
+//
+//    } else {
+//
+//    }
 }
 
 /************************* WIFI EVENT HANDLER  ***************************/
