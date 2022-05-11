@@ -84,7 +84,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     //HAL_UART_Transmit(&huart2, UART1_rxBuffer, 12, 100);
    // HAL_UART_Transmit_DMA(&huart2, txBuff, 3);
 
-	HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 1);
+	//HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 1);
 	notificationStruct temp;
 	temp.type=(notifTypeTypedef)rxBuff[0];
 
@@ -101,7 +101,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
   	sendNotif(temp.type, temp.value1, temp.value2, &swSlave_TaskHandle);
   //	sendNotif((notifTypeTypedef)LINE_RESET_FINISH, 5, 5, &swSlave_TaskHandle);
 
-  	HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 0);
+  //	HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 0);
     HAL_UART_Receive_DMA (&huart2,rxBuff, 9);
 
 
@@ -125,7 +125,7 @@ static void MX_USART2_UART_Init(void)
 
   /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
-  huart2.Init.BaudRate = 115200*10;
+  huart2.Init.BaudRate = 115200;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;

@@ -56,7 +56,6 @@ void app_main(void){
     gpio_init();
 
 
-	ESP_LOGD(tag, "socket: rc:");
 
     uart_init();
 
@@ -74,32 +73,31 @@ void app_main(void){
 
     while (1)
     {
+
     	length = uart_read_bytes(uart_num, rxData, 9, portMAX_DELAY);
 
-    	/*notificationStruct temp;
-    		temp.type=(notifTypeTypedef)rxData[0];
+//        gpio_set_level(DEBUG_PIN_2, 1);
+//    	gpio_set_level(DEBUG_PIN_2, 0);
 
-    		temp.value1=0;
-    		temp.value2=0;
-
-    		temp.value1=(rxData[1]<<24) + (rxData[2]<<16) +( rxData[3]<<8) + (rxData[4]);
-    		temp.value2=(rxData[5]<<24) + (rxData[6]<<16) + (rxData[7]<<8) + (rxData[8]);
-
-    		masterNotif.type=temp.type;
-    		masterNotif.value1=temp.value1;
-    		masterNotif.value2=temp.value2;*/
 
     	send(sock,rxData,9,0);
 
+
+
+    	    	//vTaskDelay(1); // TESTING ONLY
+
     	recv(sock,txData,9,0);
 
-    		//BaseType_t  pxHigherPriorityTaskWoken=pdFALSE;
-    		//xTaskNotifyFromISR(swMaster_TaskHandle,0,eNoAction,&pxHigherPriorityTaskWoken);
-    	//	portYIELD();
+gpio_set_level(DEBUG_PIN_1, 1);
+   	    	gpio_set_level(DEBUG_PIN_1, 0);
+//    		gpio_set_level(DEBUG_PIN_2, 1);
+//    	    	gpio_set_level(DEBUG_PIN_2, 0);
 
 
-    	//txData[0]=6;
         uart_write_bytes(uart_num, (const char*)txData, length);
+
+//        	gpio_set_level(DEBUG_PIN_2, 1);
+//            	gpio_set_level(DEBUG_PIN_2, 0);
    // vTaskDelay(1000);
 
 
@@ -238,6 +236,9 @@ void wifi_init_sta(void)
 static void event_handler(void* arg, esp_event_base_t event_base,
                                 int32_t event_id, void* event_data)
 {
+	//gpio_set_level(DEBUG_PIN_2, 1);
+	//    	gpio_set_level(DEBUG_PIN_2, 0);
+
     if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
         esp_wifi_connect();
     } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
@@ -266,7 +267,7 @@ void gpio_init(void)
 	    gpio_config_t io_conf = {};
 
 	        /*GPIO PIN: SWD_SLAVE_CLK_Pin*/
-	        io_conf.intr_type = GPIO_INTR_NEGEDGE;
+	        io_conf.intr_type = GPIO_INTR_DISABLE;
 	        io_conf.mode = GPIO_MODE_INPUT;
 	        io_conf.pin_bit_mask = (1<<SWD_SLAVE_CLK_Pin) ;
 	        io_conf.pull_down_en = 0;
@@ -310,10 +311,10 @@ void gpio_init(void)
 
 	        /*DEBUG_PIN_2*/
 	        io_conf.intr_type = GPIO_INTR_DISABLE;
-	        io_conf.mode = GPIO_MODE_OUTPUT;
+	        io_conf.mode = GPIO_MODE_OUTPUT_OD;
 	        io_conf.pin_bit_mask = (1<<DEBUG_PIN_2) ;
 	        io_conf.pull_down_en = 0;
-	        io_conf.pull_up_en = 0;
+	        io_conf.pull_up_en = 1;
 	        gpio_config(&io_conf);
 
 	        /*DEBUG_PIN_3*/

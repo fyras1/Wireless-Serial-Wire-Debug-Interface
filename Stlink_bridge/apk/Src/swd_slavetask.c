@@ -26,7 +26,7 @@
 uint8_t dataReceived=0;
 uint8_t dataWriteFinish=1;
 uint8_t errFlagSlave=0;
-uint8_t lineResetFinish=0;
+uint8_t lineResetFinish=1;
 uint8_t taskIsActive=0;
 
 void vSlaveswd_Task(void *argumen0t)
@@ -308,7 +308,10 @@ __attribute__((optimize("-Ofast"))) void Swd_SlaveStateMachineShifter(void)
 					{
 						State = SWD_WAIT_FOR_REQUEST;
 						nbBitsRst2 = 0;
+						dataReceived=0;
 						sendNotif(LINE_RESET_FULL,SWDseq,0 , &swSlave_TaskHandle);
+						lineResetFinish=0;
+
 						requestPending=0;
 						SWDseq = 0;
 
