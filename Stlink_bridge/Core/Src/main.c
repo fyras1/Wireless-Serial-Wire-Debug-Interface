@@ -85,20 +85,38 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
    // HAL_UART_Transmit_DMA(&huart2, txBuff, 3);
 
 	//HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 1);
-	notificationStruct temp;
-	temp.type=(notifTypeTypedef)rxBuff[0];
-
-	temp.value1=0;
-	temp.value2=0;
-
-	temp.value1=(rxBuff[1]<<24) + (rxBuff[2]<<16) +( rxBuff[3]<<8) + (rxBuff[4]);
-	temp.value2=(rxBuff[5]<<24) + (rxBuff[6]<<16) + (rxBuff[7]<<8) + (rxBuff[8]);
+	//notificationStruct temp;
+	uartNotif.type=(notifTypeTypedef)rxBuff[0];
 
 
 
+	uartNotif.value1=(rxBuff[1]<<24) + (rxBuff[2]<<16) +( rxBuff[3]<<8) + (rxBuff[4]);
+	uartNotif.value2=(rxBuff[5]<<24) + (rxBuff[6]<<16) + (rxBuff[7]<<8) + (rxBuff[8]);
 
 
-  	sendNotif(temp.type, temp.value1, temp.value2, &swSlave_TaskHandle);
+	switch(uartNotif.type){
+		case DATA_FROM_MASTER:
+			{
+				dataReceived=1;
+				break;
+			}
+
+
+			case DATA_WRITE_FINISH:
+			{
+				dataWriteFinish=1;
+				requestPending=0;
+				break;
+			}
+			case LINE_RESET_FINISH:
+			{
+				lineResetFinish=1;
+				break;
+			}
+		}
+
+
+  	//sendNotif(temp.type, temp.value1, temp.value2, &swSlave_TaskHandle);
   //	sendNotif((notifTypeTypedef)LINE_RESET_FINISH, 5, 5, &swSlave_TaskHandle);
 
   //	HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 0);

@@ -39,7 +39,15 @@
 	 uint32_t value2;
  } notificationStruct;
 
- extern notificationStruct slaveNotif,masterNotif;
+ extern notificationStruct slaveNotif,masterNotif,uartNotif;
+
+extern uint8_t dataReceived;
+ extern uint8_t dataWriteFinish;
+ extern uint8_t errFlagSlave;
+ extern uint8_t lineResetFinish;
+ extern uint8_t taskIsActive;
+
+ extern uint8_t requestPending;
 
 
 

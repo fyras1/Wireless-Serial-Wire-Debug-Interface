@@ -22,7 +22,7 @@ QueueHandle_t xQueueSlave;
 globalHandlerTypeDef  h_global;
 
 
-notificationStruct slaveNotif,masterNotif;
+notificationStruct slaveNotif,masterNotif,uartNotif;
 
 static void InitHandler(void);
 

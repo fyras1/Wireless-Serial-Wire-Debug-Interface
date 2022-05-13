@@ -531,7 +531,7 @@ __attribute__((optimize("-Ofast"))) void Swd_SlaveStateMachineShifter(void)
 				/*condition is entered in case we have data from master (read request)*/
 				if (dataReceived && dataCounter<32)
 				{
-					uint8_t bit = (slaveNotif.value1>>(31-dataCounter))&0x01;
+					uint8_t bit = (uartNotif.value1>>(31-dataCounter))&0x01;
 					GPIOE->ODR = ((GPIOE->ODR & ~(SWD_SLAVE_DATA_Pin)) | ( (bit) << 9)); //write bit to swdio
 
 					dataParity^=bit;
