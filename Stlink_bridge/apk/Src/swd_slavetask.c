@@ -29,6 +29,9 @@ uint8_t errFlagSlave=0;
 uint8_t lineResetFinish=1;
 uint8_t taskIsActive=0;
 
+uint8_t requestPending=0;
+
+
 void vSlaveswd_Task(void *argumen0t)
 {
 	notificationStruct notif;
@@ -108,6 +111,7 @@ void vSlaveswd_Task(void *argumen0t)
 			case DATA_WRITE_FINISH:
 			{
 				dataWriteFinish=1;
+				requestPending=0;
 				break;
 			}
 			case LINE_RESET_FINISH:
@@ -189,7 +193,6 @@ uint8_t retAckOk=0;
 
 uint8_t saveData=0;
 
-uint8_t requestPending=0;
 
 
 
@@ -402,6 +405,9 @@ __attribute__((optimize("-Ofast"))) void Swd_SlaveStateMachineShifter(void)
 						 else
 							 { retAckOk=1;
 							   saveData=1;
+
+							   //new changes ->
+							   	  requestPending=1;
 							 }
 					 }
 
@@ -727,7 +733,10 @@ inline SlaveStateTypeDef SwitchToRisingAndSkipEdge(uint8_t newEdge, SlaveStateTy
 inline void sendNotif( notifTypeTypedef notifType, uint32_t val1,uint32_t val2, TaskHandle_t *swSlave_TaskHandle ) {
 
 				//	HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 1);
-			slaveNotif.value1=val1;
+
+
+
+	    slaveNotif.value1=val1;
 			slaveNotif.value2=val2;
 
 			slaveNotif.type = notifType;
@@ -737,7 +746,10 @@ inline void sendNotif( notifTypeTypedef notifType, uint32_t val1,uint32_t val2, 
 
 			BaseType_t xHigherPriorityTaskWoken=pdFALSE;
 
+
 			xTaskNotifyFromISR(*swSlave_TaskHandle,0,eNoAction,&xHigherPriorityTaskWoken);
+
+
 
 
 			//portYIELD_FROM_ISR( xHigherPriorityTaskWoken );

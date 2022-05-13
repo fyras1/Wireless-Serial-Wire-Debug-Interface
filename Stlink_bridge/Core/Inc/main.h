@@ -49,6 +49,8 @@ DMA_HandleTypeDef hdma_usart2_tx;
 /* USER CODE BEGIN PV */
 uint8_t txBuff[9];
 uint8_t rxBuff[9];
+notificationStruct queue[3];
+//uint8_t front=0;
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/

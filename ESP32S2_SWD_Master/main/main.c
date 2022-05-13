@@ -76,9 +76,12 @@ void app_main(void)
 
        		 while(1)
        		 {
+       			gpio_set_level(DEBUG_PIN_1, 1);
+       			gpio_set_level(DEBUG_PIN_1, 0);
        				 recv(clientSock, tcpRxBuff, 9, 0);
+       				 gpio_set_level(DEBUG_PIN_1, 1);
 
-       				 vTaskDelay(1);
+       				// vTaskDelay(1);
 
        		 	   //    notificationStruct masterNotif;
        		 	   masterNotif.type=(notifTypeTypedef) tcpRxBuff[0];
@@ -102,11 +105,13 @@ void app_main(void)
        		 	tcpTxBuff[6]=(slaveNotif.value2>>16) & 0xFF;
        		 	tcpTxBuff[7]=(slaveNotif.value2>>8) & 0xFF;
        		 	tcpTxBuff[8]=(slaveNotif.value2>>0) & 0xFF;
-
+              gpio_set_level(DEBUG_PIN_1, 0);
        				send(clientSock,tcpTxBuff,9,0);
 
        				gpio_set_level(DEBUG_PIN_1, 1);
        				gpio_set_level(DEBUG_PIN_1, 0);
+
+
 
 
 
@@ -157,6 +162,9 @@ void wifi_init_softap(void)
     esp_wifi_set_mode(WIFI_MODE_AP);
     esp_wifi_set_config(WIFI_IF_AP, &wifi_config);
     esp_wifi_start();
+
+    esp_wifi_set_ps(WIFI_PS_NONE); //added new
+
 
 
 

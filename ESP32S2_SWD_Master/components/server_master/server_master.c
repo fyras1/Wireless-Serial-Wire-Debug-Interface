@@ -52,13 +52,14 @@ void master_func(void )
 		    swclk_cycle(); /*turnaround*/
 		    readAck();
 		    //ackMaster=0x02; simulate ack wait
-		    while(ackMaster!=0x04)
+		    uint8_t retries=0;
+		    while(ackMaster!=0x04 && retries<60)
 		    {
 				swclk_cycle(); /*turnaround*/
 				swdio_Write(masterNotif.value1,8);
 				swclk_cycle(); /*turnaround*/
 				readAck();
-
+				retries++;
 
 		    }
 		    if (ackMaster==0x04) //ACK OK
@@ -112,7 +113,7 @@ void master_func(void )
 
 			swdio_Write(parity(masterNotif.value2),1);
 
-			swdio_mode_output();
+			//swdio_mode_output();
 			swdio_Write(0,50); /*trailing bits*/
 			//masterNotif.type=ACK;
 

@@ -46,7 +46,6 @@ int length = 0;
 int sock;
 
 static int s_retry_num = 0;
-static char tag[] = "socketClient";
 
 
 
@@ -76,28 +75,29 @@ void app_main(void){
 
     	length = uart_read_bytes(uart_num, rxData, 9, portMAX_DELAY);
 
-//        gpio_set_level(DEBUG_PIN_2, 1);
-//    	gpio_set_level(DEBUG_PIN_2, 0);
+        gpio_set_level(DEBUG_PIN_1, 1);
+    	gpio_set_level(DEBUG_PIN_1, 0);
 
 
     	send(sock,rxData,9,0);
 
-
+        gpio_set_level(DEBUG_PIN_1, 1);
+   	    	gpio_set_level(DEBUG_PIN_1, 0);
 
     	    	//vTaskDelay(1); // TESTING ONLY
 
     	recv(sock,txData,9,0);
 
-gpio_set_level(DEBUG_PIN_1, 1);
-   	    	gpio_set_level(DEBUG_PIN_1, 0);
+    	gpio_set_level(DEBUG_PIN_1, 1);
+    	   	    	gpio_set_level(DEBUG_PIN_1, 0);
 //    		gpio_set_level(DEBUG_PIN_2, 1);
 //    	    	gpio_set_level(DEBUG_PIN_2, 0);
 
 
         uart_write_bytes(uart_num, (const char*)txData, length);
 
-//        	gpio_set_level(DEBUG_PIN_2, 1);
-//            	gpio_set_level(DEBUG_PIN_2, 0);
+        	gpio_set_level(DEBUG_PIN_1, 1);
+            	gpio_set_level(DEBUG_PIN_1, 0);
    // vTaskDelay(1000);
 
 
@@ -165,11 +165,11 @@ void uart_init(void)
 
 void uart_callback(void)
 {
-	gpio_set_level(DEBUG_PIN_1,1);
+	//gpio_set_level(DEBUG_PIN_1,1);
 
 
 
-	gpio_set_level(DEBUG_PIN_1,0);
+	//gpio_set_level(DEBUG_PIN_1,0);
 
 
 }
@@ -212,7 +212,7 @@ void wifi_init_sta(void)
   esp_wifi_set_mode(WIFI_MODE_STA) ;
     esp_wifi_set_config(WIFI_IF_STA, &wifi_config) ;
     esp_wifi_start();
-
+    esp_wifi_set_ps(WIFI_PS_NONE); // added new - need test
 
 
     EventBits_t bits = xEventGroupWaitBits(s_wifi_event_group,
@@ -236,8 +236,8 @@ void wifi_init_sta(void)
 static void event_handler(void* arg, esp_event_base_t event_base,
                                 int32_t event_id, void* event_data)
 {
-	//gpio_set_level(DEBUG_PIN_2, 1);
-	//    	gpio_set_level(DEBUG_PIN_2, 0);
+	gpio_set_level(DEBUG_PIN_2, 1);
+	   	gpio_set_level(DEBUG_PIN_2, 0);
 
     if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
         esp_wifi_connect();
@@ -257,6 +257,7 @@ static void event_handler(void* arg, esp_event_base_t event_base,
         xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
     }
 }
+
 
 
 /************************* GPIO INIT ***************************/
