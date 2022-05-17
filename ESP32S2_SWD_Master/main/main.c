@@ -31,10 +31,17 @@
 //#include "server_master.h"
 
 //#include "main.h"
+
+#define CONFIG_ESPNOW_CHANNEL				1
+#define ESPNOW_WIFI_MODE 					WIFI_MODE_STA
+#define ESPNOW_WIFI_IF 						ESP_IF_WIFI_STA
+#define MAX_ESPNOW_PACKET_SIZE				250
+
 char* TAG="esp master:";
 esp_now_peer_info_t peer;
+example_espnow_send_param_t *send_param;
 
-static uint8_t peer_mac_addr[6] = { 0x7C, 0xDF, 0xA1, 0x51, 0x08, 0xDD }; //white base mac 7c:df:a1:51:08:dc
+static uint8_t peer_mac_addr[6] = { 0x7C, 0xDF, 0xA1, 0x51, 0x08, 0xDC }; //white base mac 7c:df:a1:51:08:dc
 
 
 struct sockaddr_in clientAddress;
@@ -53,6 +60,11 @@ esp_err_t event_handler(void *ctx, system_event_t *event)
     return ESP_OK;
 }
 
+
+static esp_err_t example_espnow_init(void);
+
+static void initWifi(void);
+
 void wifi_init_softap(void);
 static void wifi_event_handler(void* arg, esp_event_base_t event_base,
                                     int32_t event_id, void* event_data);
@@ -70,83 +82,72 @@ void app_main(void)
    // tcpip_adapter_init();
    // wifi_init_softap();
 
-    wifi_init();
+   // wifi_init();
+
+    initWifi();
+
+    example_espnow_init();
+
+
     esp_wifi_internal_set_fix_rate(ESP_IF_WIFI_AP, 1, WIFI_PHY_RATE_MCS7_SGI);
 
 
     esp_now_init() ;
-   esp_now_register_send_cb(send_cb) ;
-    esp_now_register_recv_cb(recv_cb) ;
-
-    add_peer();
-
-
-
-  /*  int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-
-       serverAddress.sin_family = AF_INET;
-       	serverAddress.sin_addr.s_addr = htonl(INADDR_ANY);
-    	//serverAddress.sin_addr.s_addr = htonl(((u32_t)0x7f000002UL));
-       	serverAddress.sin_port = htons(PORT_NUMBER);
-
-       	bind(sock, (struct sockaddr *)&serverAddress, sizeof(serverAddress));
-
-       	 listen(sock, 5);
-
-*/
-       	/* while (1)
-       	 {
-       		 socklen_t clientAddressLength = sizeof(clientAddress);
-       		 int clientSock = accept(sock, (struct sockaddr *)&clientAddress, &clientAddressLength);
-
-       		 while(1)
-       		 {
-       			gpio_set_level(DEBUG_PIN_1, 1);
-       			gpio_set_level(DEBUG_PIN_1, 0);
-       				 recv(clientSock, tcpRxBuff, 9, 0);
-       				 gpio_set_level(DEBUG_PIN_1, 1);
-
-       				// vTaskDelay(1);
-
-       		 	   //    notificationStruct masterNotif;
-       		 	   masterNotif.type=(notifTypeTypedef) tcpRxBuff[0];
-
-       		 	   masterNotif.value1=0;
-       		 	   masterNotif.value2=0;
-
-       		 	   masterNotif.value1=(tcpRxBuff[1]<<24) + (tcpRxBuff[2]<<16) +( tcpRxBuff[3]<<8) + (tcpRxBuff[4]);
-       		 	   masterNotif.value2=(tcpRxBuff[5]<<24) + (tcpRxBuff[6]<<16) + (tcpRxBuff[7]<<8) + (tcpRxBuff[8]);
-
-       		 	   master_func();
-
-       		 	tcpTxBuff[0]=(uint8_t) slaveNotif.type;
-
-       		 	tcpTxBuff[1]=(slaveNotif.value1>>24) & 0xFF;
-       		 	tcpTxBuff[2]=(slaveNotif.value1>>16) & 0xFF;
-       		 	tcpTxBuff[3]=(slaveNotif.value1>>8) & 0xFF;
-       		 	tcpTxBuff[4]=(slaveNotif.value1>>0) & 0xFF;
-
-       		 	tcpTxBuff[5]=(slaveNotif.value2>>24) & 0xFF;
-       		 	tcpTxBuff[6]=(slaveNotif.value2>>16) & 0xFF;
-       		 	tcpTxBuff[7]=(slaveNotif.value2>>8) & 0xFF;
-       		 	tcpTxBuff[8]=(slaveNotif.value2>>0) & 0xFF;
-              gpio_set_level(DEBUG_PIN_1, 0);
-       				send(clientSock,tcpTxBuff,9,0);
-
-       				gpio_set_level(DEBUG_PIN_1, 1);
-       				gpio_set_level(DEBUG_PIN_1, 0);
+//   esp_now_register_send_cb(send_cb) ;
+//    esp_now_register_recv_cb(recv_cb) ;
+//
+//    add_peer();
 
 
+    while(1){}
 
-
-
-
-       		 }
-       	 }*/
 
 
 
 }
+
+/***********************esp now master init**********************/
+
+static esp_err_t example_espnow_init(void)
+{
+
+    /* Initialize ESPNOW and register sending and receiving callback function. */
+    ESP_ERROR_CHECK( esp_now_init() );
+    ESP_ERROR_CHECK( esp_now_register_send_cb(send_cb) );
+    ESP_ERROR_CHECK( esp_now_register_recv_cb(recv_cb) );
+
+    /* Add broadcast peer information to peer list. */
+    esp_now_peer_info_t *peer = malloc(sizeof(esp_now_peer_info_t));
+    memset(peer, 0, sizeof(esp_now_peer_info_t));
+
+	//Add espnow node to reply to
+	printf("\r\n\tAdd Remote node(peer) to local peer list...");
+	peer->channel = CONFIG_ESPNOW_CHANNEL;
+	peer->ifidx = ESPNOW_WIFI_IF;
+	peer->encrypt = false;
+	//memcpy(peer->lmk, CONFIG_ESPNOW_LMK, ESP_NOW_KEY_LEN);
+	memcpy(peer->peer_addr, peer_mac_addr, ESP_NOW_ETH_ALEN);
+	ESP_ERROR_CHECK( esp_now_add_peer(peer) );
+	free(peer);
+	printf("Remote Peer(the sender) Added!\r\n");
+
+
+    /* Initialize sending parameters. */
+    send_param = malloc(sizeof(example_espnow_send_param_t));
+    memset(send_param, 0, sizeof(example_espnow_send_param_t));
+    send_param->unicast = true;
+    send_param->broadcast = false;
+    send_param->state = 0;
+    send_param->magic = esp_random();
+    send_param->count = 1;//CONFIG_ESPNOW_SEND_COUNT;
+    send_param->delay = 0;//CONFIG_ESPNOW_SEND_DELAY;
+    send_param->len = MAX_ESPNOW_PACKET_SIZE;//CONFIG_ESPNOW_SEND_LEN;
+    send_param->buffer = malloc(send_param->len);
+    memcpy(send_param->dest_mac, peer_mac_addr, ESP_NOW_ETH_ALEN);
+
+	return ESP_OK;
+}
+
 
 
 /*************ESP NOW SEND CALLBACK***************/
@@ -164,8 +165,10 @@ static void send_cb(const uint8_t *mac_addr, esp_now_send_status_t status)
 static void recv_cb(const uint8_t *mac_addr, const uint8_t *data, int len)
 {
 
+	//esp_now_send(send_param->dest_mac, data, len);
+
 		for(int i=0;i<len;i++){
-		    ESP_LOGI(TAG, "received : %d",data[i]);
+		   // ESP_LOGI(TAG, "received : %d",data[i]);
 		    tcpRxBuff[i]=data[i];
 		}
 
@@ -191,7 +194,8 @@ static void recv_cb(const uint8_t *mac_addr, const uint8_t *data, int len)
 			tcpTxBuff[7]=(slaveNotif.value2>>8) & 0xFF;
 			tcpTxBuff[8]=(slaveNotif.value2>>0) & 0xFF;
 
-		esp_now_send(peer.peer_addr, tcpTxBuff, len);
+		esp_now_send(send_param->dest_mac, tcpTxBuff, len);
+
 	    //vTaskDelay(1000 / portTICK_RATE_MS);
        // uart_write_bytes(uart_num, (const char*)rxData, 9);
 
@@ -205,7 +209,7 @@ void add_peer()
 {
 
     peer.channel = 1;
-    peer.ifidx = ESP_IF_WIFI_AP;
+    peer.ifidx = ESP_IF_WIFI_STA;
     peer.encrypt = false;
     for(int i=0;i<6;i++){
     	peer.peer_addr[i]=peer_mac_addr[i];
@@ -215,6 +219,35 @@ void add_peer()
 }
 
 /************************WIFI INIT ESP NOW************************/
+
+
+static void initWifi(void)
+{
+    esp_err_t ret;
+    wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+	uint8_t cnt=0;
+
+	//tcpip_adapter_init();
+    //ret = esp_event_loop_init(example_event_handler, NULL);
+    ret = esp_wifi_init(&cfg);
+    ret = esp_wifi_set_storage(WIFI_STORAGE_RAM);
+    ret = esp_wifi_set_mode( ESPNOW_WIFI_MODE );
+    ret = esp_wifi_start();
+    ret = esp_wifi_set_channel(CONFIG_ESPNOW_CHANNEL, 0);
+	ret = esp_wifi_set_ps(WIFI_PS_NONE);
+	//ret = esp_wifi_get_mac(ESPNOW_WIFI_IF, localMac);
+	printf("\r\n[%d]\r\n", ret);
+	printf("\r\nWIFI_MODE_STA MAC Address:\t");
+
+	printf("\r\nEnabling Long range setting...[");
+	ret = esp_wifi_set_protocol(ESPNOW_WIFI_IF, WIFI_PROTOCOL_11B|WIFI_PROTOCOL_11G|WIFI_PROTOCOL_11N); //WIFI_PROTOCOL_LR
+	printf(esp_err_to_name(ret));
+	printf("]\r\n");
+	printf("Setting High Spees Mode...[");
+	//ret = esp_wifi_internal_set_fix_rate(ESPNOW_WIFI_IF, 1, WIFI_PHY_RATE_MCS3_SGI);
+	printf("%d]\r\n", ret);
+}
+
  void wifi_init(void)
 {
     esp_netif_init();

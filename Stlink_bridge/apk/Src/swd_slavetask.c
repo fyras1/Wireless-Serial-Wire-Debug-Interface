@@ -398,7 +398,7 @@ __attribute__((optimize("-Ofast"))) void Swd_SlaveStateMachineShifter(void)
 
 					 else
 					 {
-						 if (requestPending==1)
+						 if (requestPending==1 || !lineResetFinish)
 							 {
 							 retAckWait=1; // if a WRITE request and request is still pending
 							 }
