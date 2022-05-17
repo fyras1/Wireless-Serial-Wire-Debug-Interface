@@ -6,7 +6,13 @@
 #include "driver/uart.h"
 #include "freertos/event_groups.h"
 #include "nvs_flash.h"
-#include <esp_log.h>
+#include "esp_wifi.h"
+#include "esp_log.h"
+
+#include "esp_private/wifi.h"
+
+#include "esp_now.h"
+
 
 
 #include "main.h"
@@ -27,11 +33,19 @@ void uart_callback(void);
 static void event_handler(void* arg, esp_event_base_t event_base,
                                 int32_t event_id, void* event_data);
 
+void wifi_init(void);
+void add_peer(void);
+static void send_cb(const uint8_t *mac_addr, esp_now_send_status_t status);
+
+static void recv_cb(const uint8_t *mac_addr, const uint8_t *data, int len);
+
 void socketClient() ;
 
 void wifi_init_sta(void);
 
 
+
+char* TAG="esp bridge ";
 //void wifi_init_softap(void);
 static EventGroupHandle_t s_wifi_event_group;
 
@@ -40,13 +54,17 @@ uart_port_t uart_num = UART_NUM_1;
 uart_isr_handle_t uart_isr_handle;
 
 uint8_t rxData[10];
-uint8_t txData[10];
+uint8_t txData[10]={1,2,3,4,5,6,7,8,9};
 int length = 0;
 
 int sock;
 
 static int s_retry_num = 0;
 
+uint8_t espnow_recv=0;
+
+esp_now_peer_info_t peer;
+static uint8_t peer_mac_addr[6] = { 0x7C, 0xDF, 0xA1, 0x54, 0x5C, 0x6D }; //BACLK BASE MAC: 7c:df:a1:54:5c:6c
 
 
 void app_main(void){
@@ -61,49 +79,128 @@ void app_main(void){
    nvs_flash_init();
 
 
-    wifi_init_sta();
+    //wifi_init_sta();
+
+   wifi_init();
+   esp_wifi_internal_set_fix_rate(ESP_IF_WIFI_AP, 1, WIFI_PHY_RATE_MCS7_SGI);
+
+   esp_now_init() ;
+  esp_now_register_send_cb(send_cb) ;
+   esp_now_register_recv_cb(recv_cb) ;
+
+   add_peer();
 
 
-    socketClient();
+
+   // socketClient();
+
+ //  while(1){};
 
 //    wifi_init_softap();
 
 
 
-    while (1)
-    {
+   // while (1)
+   // {
 
-    	length = uart_read_bytes(uart_num, rxData, 9, portMAX_DELAY);
+    	uart_read_bytes(uart_num, rxData, 9, portMAX_DELAY);
 
-        gpio_set_level(DEBUG_PIN_1, 1);
-    	gpio_set_level(DEBUG_PIN_1, 0);
+      //  gpio_set_level(DEBUG_PIN_1, 1);
+    	//gpio_set_level(DEBUG_PIN_1, 0);
 
 
-    	send(sock,rxData,9,0);
+    	esp_now_send(peer.peer_addr, rxData, 9);
 
-        gpio_set_level(DEBUG_PIN_1, 1);
-   	    	gpio_set_level(DEBUG_PIN_1, 0);
+    	  // while(!espnow_recv){} //wait until recv_cb is called
+
+    	   espnow_recv=0;
+    //}
+
+    	//send(sock,rxData,9,0);
+
+       // gpio_set_level(DEBUG_PIN_1, 1);
+   	    //	gpio_set_level(DEBUG_PIN_1, 0);
 
     	    	//vTaskDelay(1); // TESTING ONLY
 
-    	recv(sock,txData,9,0);
+    	//recv(sock,txData,9,0);
 
-    	gpio_set_level(DEBUG_PIN_1, 1);
-    	   	    	gpio_set_level(DEBUG_PIN_1, 0);
+    	//gpio_set_level(DEBUG_PIN_1, 1);
+    	  // 	    	gpio_set_level(DEBUG_PIN_1, 0);
 //    		gpio_set_level(DEBUG_PIN_2, 1);
 //    	    	gpio_set_level(DEBUG_PIN_2, 0);
 
 
-        uart_write_bytes(uart_num, (const char*)txData, length);
+     //   uart_write_bytes(uart_num, (const char*)txData, length);
 
-        	gpio_set_level(DEBUG_PIN_1, 1);
-            	gpio_set_level(DEBUG_PIN_1, 0);
+        //	gpio_set_level(DEBUG_PIN_1, 1);
+           // 	gpio_set_level(DEBUG_PIN_1, 0);
    // vTaskDelay(1000);
 
 
-    }
+
 
 }
+
+/*************ESP NOW SEND CALLBACK***************/
+static void send_cb(const uint8_t *mac_addr, esp_now_send_status_t status)
+{
+    ESP_LOGI(TAG, "DATA send CB , status: %d", status);
+
+
+
+}
+
+
+/*************ESP NOW RECEIVE CALLBACK***************/
+
+static void recv_cb(const uint8_t *mac_addr, const uint8_t *data, int len)
+{
+
+		for(int i=0;i<len;i++){
+		    ESP_LOGI(TAG, "received : %d",data[i]);
+		    rxData[i]=data[i];
+		}
+	    //vTaskDelay(1000 / portTICK_RATE_MS);
+        uart_write_bytes(uart_num, (const char*)rxData, 9);
+    	uart_read_bytes(uart_num, rxData, 9, portMAX_DELAY);
+    	esp_now_send(peer.peer_addr, rxData, 9);
+
+
+
+    //espnow_recv=1;
+
+
+}
+
+/****************ESP ADD PEER************************/
+void add_peer()
+{
+
+    peer.channel = 1;
+    peer.ifidx = ESP_IF_WIFI_AP; //changed from sta;
+    peer.encrypt = false;
+    for(int i=0;i<6;i++){
+    	peer.peer_addr[i]=peer_mac_addr[i];
+    }
+    esp_now_add_peer(&peer) ;
+
+}
+
+/************************WIFI INIT ESP NOW************************/
+ void wifi_init(void)
+{
+    esp_netif_init();
+    esp_event_loop_create_default();
+    wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+     esp_wifi_init(&cfg) ;
+    esp_wifi_set_storage(WIFI_STORAGE_RAM) ;
+     esp_wifi_set_mode(WIFI_MODE_AP) ; //changed from sta;
+    esp_wifi_start();
+
+
+}
+
 
     /***************************** Socket Client ********************/
     void socketClient() {

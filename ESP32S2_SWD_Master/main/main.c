@@ -10,6 +10,13 @@
 //#include "esp_event_loop.h"
 #include "nvs_flash.h"
 
+#include "esp_log.h"
+#include "esp_private/wifi.h"
+
+
+
+#include "esp_now.h"
+
 
 
 
@@ -18,13 +25,17 @@
 #include <string.h>
 
 #include "esp_mac.h"
-#include "esp_wifi.h"
 #include <lwip/sockets.h>
 
 
 //#include "server_master.h"
 
 //#include "main.h"
+char* TAG="esp master:";
+esp_now_peer_info_t peer;
+
+static uint8_t peer_mac_addr[6] = { 0x7C, 0xDF, 0xA1, 0x51, 0x08, 0xDD }; //white base mac 7c:df:a1:51:08:dc
+
 
 struct sockaddr_in clientAddress;
 struct sockaddr_in serverAddress;
@@ -46,18 +57,32 @@ void wifi_init_softap(void);
 static void wifi_event_handler(void* arg, esp_event_base_t event_base,
                                     int32_t event_id, void* event_data);
 
+void wifi_init(void);
+void add_peer(void);
+static void send_cb(const uint8_t *mac_addr, esp_now_send_status_t status);
 
+static void recv_cb(const uint8_t *mac_addr, const uint8_t *data, int len);
 
 void app_main(void)
 {
 	gpio_init();
     nvs_flash_init();
    // tcpip_adapter_init();
-    wifi_init_softap();
+   // wifi_init_softap();
+
+    wifi_init();
+    esp_wifi_internal_set_fix_rate(ESP_IF_WIFI_AP, 1, WIFI_PHY_RATE_MCS7_SGI);
+
+
+    esp_now_init() ;
+   esp_now_register_send_cb(send_cb) ;
+    esp_now_register_recv_cb(recv_cb) ;
+
+    add_peer();
 
 
 
-    int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+  /*  int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
        serverAddress.sin_family = AF_INET;
        	serverAddress.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -68,8 +93,8 @@ void app_main(void)
 
        	 listen(sock, 5);
 
-
-       	 while (1)
+*/
+       	/* while (1)
        	 {
        		 socklen_t clientAddressLength = sizeof(clientAddress);
        		 int clientSock = accept(sock, (struct sockaddr *)&clientAddress, &clientAddressLength);
@@ -117,11 +142,95 @@ void app_main(void)
 
 
        		 }
-       	 }
+       	 }*/
 
 
 
 }
+
+
+/*************ESP NOW SEND CALLBACK***************/
+static void send_cb(const uint8_t *mac_addr, esp_now_send_status_t status)
+{
+    ESP_LOGI(TAG, "DATA send CB , status: %d", status);
+
+
+
+}
+
+
+/*************ESP NOW RECEIVE CALLBACK***************/
+
+static void recv_cb(const uint8_t *mac_addr, const uint8_t *data, int len)
+{
+
+		for(int i=0;i<len;i++){
+		    ESP_LOGI(TAG, "received : %d",data[i]);
+		    tcpRxBuff[i]=data[i];
+		}
+
+	 	   masterNotif.type=(notifTypeTypedef) tcpRxBuff[0];
+
+	 	   masterNotif.value1=0;
+	 	   masterNotif.value2=0;
+
+	 	   masterNotif.value1=(tcpRxBuff[1]<<24) + (tcpRxBuff[2]<<16) +( tcpRxBuff[3]<<8) + (tcpRxBuff[4]);
+	 	   masterNotif.value2=(tcpRxBuff[5]<<24) + (tcpRxBuff[6]<<16) + (tcpRxBuff[7]<<8) + (tcpRxBuff[8]);
+
+	 	   master_func();
+
+			tcpTxBuff[0]=(uint8_t) slaveNotif.type;
+
+			tcpTxBuff[1]=(slaveNotif.value1>>24) & 0xFF;
+			tcpTxBuff[2]=(slaveNotif.value1>>16) & 0xFF;
+			tcpTxBuff[3]=(slaveNotif.value1>>8) & 0xFF;
+			tcpTxBuff[4]=(slaveNotif.value1>>0) & 0xFF;
+
+			tcpTxBuff[5]=(slaveNotif.value2>>24) & 0xFF;
+			tcpTxBuff[6]=(slaveNotif.value2>>16) & 0xFF;
+			tcpTxBuff[7]=(slaveNotif.value2>>8) & 0xFF;
+			tcpTxBuff[8]=(slaveNotif.value2>>0) & 0xFF;
+
+		esp_now_send(peer.peer_addr, tcpTxBuff, len);
+	    //vTaskDelay(1000 / portTICK_RATE_MS);
+       // uart_write_bytes(uart_num, (const char*)rxData, 9);
+
+   // espnow_recv=1;
+
+
+}
+
+/****************ESP ADD PEER************************/
+void add_peer()
+{
+
+    peer.channel = 1;
+    peer.ifidx = ESP_IF_WIFI_AP;
+    peer.encrypt = false;
+    for(int i=0;i<6;i++){
+    	peer.peer_addr[i]=peer_mac_addr[i];
+    }
+    esp_now_add_peer(&peer) ;
+
+}
+
+/************************WIFI INIT ESP NOW************************/
+ void wifi_init(void)
+{
+    esp_netif_init();
+    esp_event_loop_create_default();
+    wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+     esp_wifi_init(&cfg) ;
+    esp_wifi_set_storage(WIFI_STORAGE_RAM) ;
+     esp_wifi_set_mode(WIFI_MODE_AP) ;
+     esp_wifi_set_ps(WIFI_PS_NONE);
+    esp_wifi_start();
+
+
+}
+
+
+
 
 
 void wifi_init_softap(void)
