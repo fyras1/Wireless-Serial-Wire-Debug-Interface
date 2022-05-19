@@ -64,16 +64,22 @@ void wifi_init_sta(void);
 
 static void sendESPNOWData(void *pvParameter);
 
+
+
 char* TAG="esp bridge ";
 //void wifi_init_softap(void);
 static EventGroupHandle_t s_wifi_event_group;
 
 uart_port_t uart_num = UART_NUM_1;
 
+
+
 uart_isr_handle_t uart_isr_handle;
 
+uint8_t* received;
+
 uint8_t rxData[10];
-uint8_t txData[10]={0x04,0,0,0x79,0xE7,0,0,0,0};
+uint8_t txData[10];//={0x04,0,0,0x79,0xE7,0,0,0,0};
 int length = 0;
 
 int sock;
@@ -99,6 +105,16 @@ void app_main(void){
 
    nvs_flash_init();
 
+//   while(1){
+//	   ESP_LOGI(TAG,"before READ");
+//		uart_read_bytes(uart_num, txData, 9, portMAX_DELAY);
+//		   ESP_LOGI(TAG,"after READ");
+//
+//		uart_write_bytes(uart_num,txData,9);
+//		   ESP_LOGI(TAG,"after WRITE");
+//
+//
+//   }
 
     //wifi_init_sta();
 
@@ -132,11 +148,11 @@ void app_main(void){
     	//gpio_set_level(DEBUG_PIN_1, 0);
 
 
-    	esp_now_send(peer.peer_addr, txData, 9);
+    	//esp_now_send(peer.peer_addr, txData, 9);
 
     	  // while(!espnow_recv){} //wait until recv_cb is called
 
-    	   espnow_recv=0;
+    	  // espnow_recv=0;
     //}
 
     	//send(sock,rxData,9,0);
@@ -188,7 +204,7 @@ static esp_err_t example_espnow_init(void)
 
 	//Add espnow node to reply to
 
-	printf("Peer Added!\r\n");
+	//printf("Peer Added!\r\n");
 
 
     /* Initialize sending parameters. */
@@ -204,8 +220,8 @@ static esp_err_t example_espnow_init(void)
     send_param->buffer = malloc(send_param->len);
     memcpy(send_param->dest_mac, peer_mac_addr, ESP_NOW_ETH_ALEN);
 
-	printf("\r\nESPNOW Set up complete!\r\n");
-	xTaskCreate(sendESPNOWData, "sendESPNOWData", 2048, send_param, 4, NULL);
+	//printf("\r\nESPNOW Set up complete!\r\n");
+	xTaskCreate(sendESPNOWData, "sendESPNOWData", 2048, send_param, 20, NULL);
 
     return ESP_OK;
 }
@@ -215,12 +231,8 @@ static esp_err_t example_espnow_init(void)
 static void sendESPNOWData(void *pvParameter)
 {
     int ret;
-	unsigned short int sendCount=0, maxSends=1000, missCnt=0;
-	long maxTimeOut = 1000000;
-    printf("\r\n");
-    globalQue.isReady=0;
-    	globalQue.previousSend=255;
-    	globalQue.currentData=0;
+
+
     /* Start sending ESPNOW data. */
 
 	send_param_var = (example_espnow_send_param_t *)pvParameter;
@@ -229,60 +241,73 @@ static void sendESPNOWData(void *pvParameter)
 	{
 		//printf("\r\n\tCurrent sendCount\t%d\t", sendCount);
 		//ESP_LOGI(TAG,"sending %d",sendCount);
+		//ESP_LOGI(TAG,"before uart READ");
+		//uart_flush(uart_num);
+		//ESP_LOGI(TAG,"after uart flush");
 
 		uart_read_bytes(uart_num, txData, 9, portMAX_DELAY);
+		//gpio_set_level(DEBUG_PIN_1, 1);
+		//gpio_set_level(DEBUG_PIN_1, 0);
 
-		for(int i=0;i<9;i++)
+		//ESP_LOGI(TAG,"after uart READ");
+
+		/*for(int i=0;i<9;i++)
 		{
 			send_param_var->buffer[i]=txData[i];
-		}
+		}*/
 		//send_param_var->buffer[0] = sendCount;
-		if ((ret=esp_now_send(send_param_var->dest_mac, send_param_var->buffer, 9)) != ESP_OK)
-		{
-			printf(esp_err_to_name(ret));
-			//example_espnow_deinit(send_param_var);
-			vTaskDelete(NULL);
-		}
-		else
-		{
+		//ESP_LOGI(TAG,"sending now");
+		//gpio_set_level(DEBUG_PIN_1, 1);
+				//gpio_set_level(DEBUG_PIN_1, 0);
+		esp_now_send(send_param_var->dest_mac, txData, 9);
+	//	gpio_set_level(DEBUG_PIN_1, 1);
+			//	gpio_set_level(DEBUG_PIN_1, 0);
+
+
+			while(received==0)
+			{
+				//vTaskDelay(1);
+			}
+			//gpio_set_level(DEBUG_PIN_1, 1);
+			//		gpio_set_level(DEBUG_PIN_1, 0);
+//
+			received=0;
 			//ESP_LOGI(TAG,"length: ? : %d",send_param_var->len);
 			//espnowTimers[0] = esp_timer_get_time();
 			//wait for reply before trasmiting
-			globalQue.previousSend = sendCount;
-			while(!globalQue.isReady)
+			/*while(!globalQue.isReady)
 			{
-				vTaskDelay(1);
-
+				//vTaskDelay(1);
+              ESP_LOGI(TAG,"in empty loop");
 				//espnowTimers[1]=esp_timer_get_time()-espnowTimers[0];
 //				if(espnowTimers[1]>maxTimeOut)
 //				{
 //					globalQue.isReady=2;
 //				}
 
-			}
-			if(globalQue.isReady==1)
-			{
-				//ESP_LOGI(TAG,"inside uart write ready 1");
+			}*/
 
-				uart_write_bytes(uart_num, (const char*)rxData, 9);
+				//ESP_LOGI(TAG,"inside uart write ready 1");
+				//WRITE_PERI_REG(UART_FIFO_AHB_REG(1), 0x06);
+				//vTaskDelay(1);
+				//UART_IDLE_CONF_REG(UART_NUM_1)=0;
+				//UART_TX_BRK_NUM
+				//UART_TXD_BRK
+				//uart_wait_tx_done(uart_num,100000);
 				//ESP_LOGI(TAG,"end  uart write ready 1");
+				//portYIELD();
 
 				//printf("RTT\t%lu microseconds", espnowTimers[1]);
-			}
-			else if(globalQue.isReady==2)
-			{
-				missCnt++;
-				printf("TIMEOUT!");
-			}
-			globalQue.isReady=0;
-			sendCount++;
+
+
+			//ESP_LOGI(TAG,"end of loop");
+
 		}
-		vTaskDelay(5 / portTICK_RATE_MS);
-	}
-	printf("\r\n\r\n\t\t\tAvg RTT\t%lu\tSent\t%d\tMissed\t%d\r\n", espnowTimers[2]/(maxSends-missCnt), (maxSends-missCnt), missCnt);
+		//vTaskDelay(5 / portTICK_RATE_MS);
+
+	//printf("\r\n\r\n\t\t\tAvg RTT\t%lu\tSent\t%d\tMissed\t%d\r\n", espnowTimers[2]/(maxSends-missCnt), (maxSends-missCnt), missCnt);
 	//example_espnow_deinit(send_param_var);
-	vTaskDelete(NULL);
-	printf("\r\n\tOut of sendESPNOWData\r\n");
+	//printf("\r\n\tOut of sendESPNOWData\r\n");
 }
 
 
@@ -302,13 +327,26 @@ static void recv_cb(const uint8_t *mac_addr, const uint8_t *data, int len)
 {
 
 	//ESP_LOGI(TAG,"last received : %d",data[8]);
-		for(int i=0;i<len;i++){
+		/*for(int i=0;i<len;i++){
 		  //  ESP_LOGI(TAG, "received : %d",data[i]);
 		    rxData[i]=data[i];
-		}
-		//ESP_LOGI(TAG,"after loop : %d",data[8]);
+		}*/
 
-		globalQue.isReady=1;
+	//ESP_LOGI(TAG,"received , before write : %d",data[8]);
+
+	 //vTaskDelay(1000);
+	//gpio_set_level(DEBUG_PIN_1, 1);
+		//	gpio_set_level(DEBUG_PIN_1, 0);
+		uart_write_bytes(uart_num, data, 9);
+	//	gpio_set_level(DEBUG_PIN_1, 1);
+				//gpio_set_level(DEBUG_PIN_1, 0);
+
+		//ESP_LOGI(TAG,"after write : %d",data[8]);
+
+
+		received=1;
+
+		//portYIELD_FROM_ISR();
 		//espnowTimers[1]=esp_timer_get_time()-espnowTimers[0];
 	//	espnowTimers[2]+=espnowTimers[1];
 
@@ -360,7 +398,7 @@ static void initWifi(void)
 	printf(esp_err_to_name(ret));
 	printf("]\r\n");
 	printf("Setting High Spees Mode...[");
-//	ret = esp_wifi_internal_set_fix_rate(ESPNOW_WIFI_IF, 1, WIFI_PHY_RATE_MCS3_SGI);
+	ret = esp_wifi_internal_set_fix_rate(ESPNOW_WIFI_IF, 1, WIFI_PHY_RATE_MCS7_SGI);
 	printf("%d]\r\n", ret);
 }
 
@@ -416,19 +454,30 @@ void uart_init(void)
 	        .parity = UART_PARITY_DISABLE,
 	        .stop_bits = UART_STOP_BITS_1,
 	        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
-	        .rx_flow_ctrl_thresh = 122,
+	       // .rx_flow_ctrl_thresh = 122,
 	    };
 	    // Configure UART parameters
-	 uart_param_config(uart_num, &uart_config);
-
-	    uart_set_pin(UART_NUM_1, 20, 21, 26, 33);
-
-	    // Setup UART buffered IO with event queue
-	    const int uart_buffer_size = (1024 * 2);
+	    const int uart_buffer_size = (128*2);
 	    QueueHandle_t uart_queue;
 	    // Install UART driver using an event queue here
-	    uart_driver_install(UART_NUM_1, uart_buffer_size,
-	                                            uart_buffer_size, 10, &uart_queue, 0);
+	  //  uart_set_tx_idle_num(UART_NUM_1,1);
+	   // uart_driver_install(UART_NUM_1, uart_buffer_size,uart_buffer_size, 10, &uart_queue, 0);
+		 uart_param_config(uart_num, &uart_config);
+
+	    uart_driver_install(UART_NUM_1, uart_buffer_size,0, 0, NULL, 0);
+
+	   // uart_driver_install(UART_NUM_1, 18,18, 10, NULL, 0);
+  //   uart_param_config(uart_num, &uart_config);
+	    uart_set_pin(UART_NUM_1, 20, 21, -1, -1);
+
+	    //UART1.idle_conf.tx_idle_num = 1;
+	  //  uart_set_pin(uart_num, tx_io_num, rx_io_num, rts_io_num, cts_io_num)
+
+
+
+
+	    // Setup UART buffered IO with event queue
+
 
 
 
@@ -440,6 +489,7 @@ void uart_callback(void)
 {
 	//gpio_set_level(DEBUG_PIN_1,1);
 
+	ESP_LOGI(TAG,"UART CALLBACK!");
 
 
 	//gpio_set_level(DEBUG_PIN_1,0);

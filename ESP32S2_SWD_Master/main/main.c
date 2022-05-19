@@ -89,10 +89,10 @@ void app_main(void)
     example_espnow_init();
 
 
-    esp_wifi_internal_set_fix_rate(ESP_IF_WIFI_AP, 1, WIFI_PHY_RATE_MCS7_SGI);
+    //esp_wifi_internal_set_fix_rate(ESP_IF_WIFI_AP, 1, WIFI_PHY_RATE_MCS7_SGI);
 
 
-    esp_now_init() ;
+   // esp_now_init() ;
 //   esp_now_register_send_cb(send_cb) ;
 //    esp_now_register_recv_cb(recv_cb) ;
 //
@@ -153,7 +153,7 @@ static esp_err_t example_espnow_init(void)
 /*************ESP NOW SEND CALLBACK***************/
 static void send_cb(const uint8_t *mac_addr, esp_now_send_status_t status)
 {
-    ESP_LOGI(TAG, "DATA send CB , status: %d", status);
+   // ESP_LOGI(TAG, "DATA send CB , status: %d", status);
 
 
 
@@ -244,7 +244,7 @@ static void initWifi(void)
 	printf(esp_err_to_name(ret));
 	printf("]\r\n");
 	printf("Setting High Spees Mode...[");
-	//ret = esp_wifi_internal_set_fix_rate(ESPNOW_WIFI_IF, 1, WIFI_PHY_RATE_MCS3_SGI);
+	ret = esp_wifi_internal_set_fix_rate(ESPNOW_WIFI_IF, 1, WIFI_PHY_RATE_MCS7_SGI);
 	printf("%d]\r\n", ret);
 }
 

@@ -1114,6 +1114,11 @@
 			<location>C:/esp/esp-idf-v4.4.1/components/vfs/vfs.c</location>
 		</link>
 		<link>
+			<name>esp_idf_components/vfs/vfs_cdcacm.c</name>
+			<type>1</type>
+			<location>C:/esp/esp-idf-v4.4.1/components/vfs/vfs_cdcacm.c</location>
+		</link>
+		<link>
 			<name>esp_idf_components/vfs/vfs_console.c</name>
 			<type>1</type>
 			<location>C:/esp/esp-idf-v4.4.1/components/vfs/vfs_console.c</location>
@@ -4172,6 +4177,11 @@
 			<name>esp_idf_components/esp_system/port/soc/esp32s2/system_internal.c</name>
 			<type>1</type>
 			<location>C:/esp/esp-idf-v4.4.1/components/esp_system/port/soc/esp32s2/system_internal.c</location>
+		</link>
+		<link>
+			<name>esp_idf_components/esp_system/port/soc/esp32s2/usb_console.c</name>
+			<type>1</type>
+			<location>C:/esp/esp-idf-v4.4.1/components/esp_system/port/soc/esp32s2/usb_console.c</location>
 		</link>
 		<link>
 			<name>esp_idf_components/espcoredump/src/port/xtensa/core_dump_port.c</name>
