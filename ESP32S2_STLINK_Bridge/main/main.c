@@ -21,7 +21,7 @@
 
 #define PORT 8001
 
-#define CONFIG_ESPNOW_CHANNEL				1
+#define CONFIG_ESPNOW_CHANNEL				7
 #define ESPNOW_WIFI_MODE 					WIFI_MODE_STA
 #define ESPNOW_WIFI_IF 						ESP_IF_WIFI_STA
 #define MAX_ESPNOW_PACKET_SIZE				250
@@ -245,7 +245,11 @@ static void sendESPNOWData(void *pvParameter)
 		//uart_flush(uart_num);
 		//ESP_LOGI(TAG,"after uart flush");
 
+		//while(1){
 		uart_read_bytes(uart_num, txData, 9, portMAX_DELAY);
+		//uart_write_bytes(uart_num, txData, 9);
+		//}
+
 		//gpio_set_level(DEBUG_PIN_1, 1);
 		//gpio_set_level(DEBUG_PIN_1, 0);
 
@@ -259,15 +263,17 @@ static void sendESPNOWData(void *pvParameter)
 		//ESP_LOGI(TAG,"sending now");
 		//gpio_set_level(DEBUG_PIN_1, 1);
 				//gpio_set_level(DEBUG_PIN_1, 0);
+		gpio_set_level(DEBUG_PIN_1, 1);
+		gpio_set_level(DEBUG_PIN_1, 0);
 		esp_now_send(send_param_var->dest_mac, txData, 9);
 	//	gpio_set_level(DEBUG_PIN_1, 1);
 			//	gpio_set_level(DEBUG_PIN_1, 0);
 
 
-			while(received==0)
+		/*	while(received==0)
 			{
 				//vTaskDelay(1);
-			}
+			}*/
 			//gpio_set_level(DEBUG_PIN_1, 1);
 			//		gpio_set_level(DEBUG_PIN_1, 0);
 //
@@ -325,6 +331,9 @@ static void send_cb(const uint8_t *mac_addr, esp_now_send_status_t status)
 
 static void recv_cb(const uint8_t *mac_addr, const uint8_t *data, int len)
 {
+
+	gpio_set_level(DEBUG_PIN_1, 1);
+	gpio_set_level(DEBUG_PIN_1, 0);
 
 	//ESP_LOGI(TAG,"last received : %d",data[8]);
 		/*for(int i=0;i<len;i++){

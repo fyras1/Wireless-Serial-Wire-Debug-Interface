@@ -32,7 +32,7 @@
 
 //#include "main.h"
 
-#define CONFIG_ESPNOW_CHANNEL				1
+#define CONFIG_ESPNOW_CHANNEL				7
 #define ESPNOW_WIFI_MODE 					WIFI_MODE_STA
 #define ESPNOW_WIFI_IF 						ESP_IF_WIFI_STA
 #define MAX_ESPNOW_PACKET_SIZE				250
@@ -44,6 +44,10 @@ example_espnow_send_param_t *send_param;
 static uint8_t peer_mac_addr[6] = { 0x7C, 0xDF, 0xA1, 0x51, 0x08, 0xDC }; //white base mac 7c:df:a1:51:08:dc
 
 
+example_espnow_send_param_t *send_param_var;
+
+static esp_err_t example_espnow_init(void);
+
 struct sockaddr_in clientAddress;
 struct sockaddr_in serverAddress;
 
@@ -52,6 +56,10 @@ uint8_t tcpTxBuff[9];
 
 notificationStruct slaveNotif,masterNotif;
 
+TaskHandle_t esp_now_task_handle;
+
+
+uint8_t received=0;
 
 void gpio_init(void);
 
@@ -99,11 +107,61 @@ void app_main(void)
 //    add_peer();
 
 
-    while(1){}
+
+
+    //while(1){}
 
 
 
 
+
+
+
+}
+
+
+/**************************ESP SEND TASK*********************/
+static void sendESPNOWData_Master(void *pvParameter)
+{
+    int ret;
+
+
+    /* Start sending ESPNOW data. */
+
+	send_param_var = (example_espnow_send_param_t *)pvParameter;
+
+	while(1)
+	{
+		xTaskNotifyWait(0x00, 0xffffffff, NULL, portMAX_DELAY);
+
+		received=0;
+
+	 	   masterNotif.type=(notifTypeTypedef) tcpRxBuff[0];
+
+	 	   masterNotif.value1=0;
+	 	   masterNotif.value2=0;
+
+	 	   masterNotif.value1=(tcpRxBuff[1]<<24) + (tcpRxBuff[2]<<16) +( tcpRxBuff[3]<<8) + (tcpRxBuff[4]);
+	 	   masterNotif.value2=(tcpRxBuff[5]<<24) + (tcpRxBuff[6]<<16) + (tcpRxBuff[7]<<8) + (tcpRxBuff[8]);
+
+	 	   master_func();
+
+			tcpTxBuff[0]=(uint8_t) slaveNotif.type;
+
+			tcpTxBuff[1]=(slaveNotif.value1>>24) & 0xFF;
+			tcpTxBuff[2]=(slaveNotif.value1>>16) & 0xFF;
+			tcpTxBuff[3]=(slaveNotif.value1>>8) & 0xFF;
+			tcpTxBuff[4]=(slaveNotif.value1>>0) & 0xFF;
+
+			tcpTxBuff[5]=(slaveNotif.value2>>24) & 0xFF;
+			tcpTxBuff[6]=(slaveNotif.value2>>16) & 0xFF;
+			tcpTxBuff[7]=(slaveNotif.value2>>8) & 0xFF;
+			tcpTxBuff[8]=(slaveNotif.value2>>0) & 0xFF;
+
+			gpio_set_level(DEBUG_PIN_1, 1);
+			gpio_set_level(DEBUG_PIN_1, 0);
+		esp_now_send(send_param->dest_mac, tcpTxBuff, 9);
+	}
 }
 
 /***********************esp now master init**********************/
@@ -145,8 +203,14 @@ static esp_err_t example_espnow_init(void)
     send_param->buffer = malloc(send_param->len);
     memcpy(send_param->dest_mac, peer_mac_addr, ESP_NOW_ETH_ALEN);
 
+	//xTaskCreate(sendESPNOWData_Master, "sendESPNOWData", 2048, send_param, 20, NULL);
+	xTaskCreate(sendESPNOWData_Master, "sendESPNOWData_Master", 2048, send_param, 20, &esp_now_task_handle);
+
+
 	return ESP_OK;
 }
+
+
 
 
 
@@ -154,6 +218,8 @@ static esp_err_t example_espnow_init(void)
 static void send_cb(const uint8_t *mac_addr, esp_now_send_status_t status)
 {
    // ESP_LOGI(TAG, "DATA send CB , status: %d", status);
+
+
 
 
 
@@ -165,6 +231,12 @@ static void send_cb(const uint8_t *mac_addr, esp_now_send_status_t status)
 static void recv_cb(const uint8_t *mac_addr, const uint8_t *data, int len)
 {
 
+
+	gpio_set_level(DEBUG_PIN_1, 1);
+	gpio_set_level(DEBUG_PIN_1, 0);
+	//gpio_set_level(DEBUG_PIN_1, 1);
+//	gpio_set_level(DEBUG_PIN_1, 0);
+
 	//esp_now_send(send_param->dest_mac, data, len);
 
 		for(int i=0;i<len;i++){
@@ -172,29 +244,11 @@ static void recv_cb(const uint8_t *mac_addr, const uint8_t *data, int len)
 		    tcpRxBuff[i]=data[i];
 		}
 
-	 	   masterNotif.type=(notifTypeTypedef) tcpRxBuff[0];
+		BaseType_t xHigherPriorityTaskWoken=pdFALSE;
 
-	 	   masterNotif.value1=0;
-	 	   masterNotif.value2=0;
+		xTaskNotifyFromISR(esp_now_task_handle,0,eNoAction,&xHigherPriorityTaskWoken);
+		portYIELD_FROM_ISR();
 
-	 	   masterNotif.value1=(tcpRxBuff[1]<<24) + (tcpRxBuff[2]<<16) +( tcpRxBuff[3]<<8) + (tcpRxBuff[4]);
-	 	   masterNotif.value2=(tcpRxBuff[5]<<24) + (tcpRxBuff[6]<<16) + (tcpRxBuff[7]<<8) + (tcpRxBuff[8]);
-
-	 	   master_func();
-
-			tcpTxBuff[0]=(uint8_t) slaveNotif.type;
-
-			tcpTxBuff[1]=(slaveNotif.value1>>24) & 0xFF;
-			tcpTxBuff[2]=(slaveNotif.value1>>16) & 0xFF;
-			tcpTxBuff[3]=(slaveNotif.value1>>8) & 0xFF;
-			tcpTxBuff[4]=(slaveNotif.value1>>0) & 0xFF;
-
-			tcpTxBuff[5]=(slaveNotif.value2>>24) & 0xFF;
-			tcpTxBuff[6]=(slaveNotif.value2>>16) & 0xFF;
-			tcpTxBuff[7]=(slaveNotif.value2>>8) & 0xFF;
-			tcpTxBuff[8]=(slaveNotif.value2>>0) & 0xFF;
-
-		esp_now_send(send_param->dest_mac, tcpTxBuff, len);
 
 	    //vTaskDelay(1000 / portTICK_RATE_MS);
        // uart_write_bytes(uart_num, (const char*)rxData, 9);
