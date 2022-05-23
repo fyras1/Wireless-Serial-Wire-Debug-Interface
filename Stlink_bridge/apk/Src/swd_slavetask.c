@@ -314,8 +314,8 @@ __attribute__((optimize("-Ofast"))) void Swd_SlaveStateMachineShifter(void)
 						dataReceived=0;
 						sendNotif(LINE_RESET_FULL,SWDseq,0 , &swSlave_TaskHandle);
 						lineResetFinish=0;
-
 						requestPending=0;
+						dataReceived=0;
 						SWDseq = 0;
 
 					}
@@ -381,7 +381,7 @@ __attribute__((optimize("-Ofast"))) void Swd_SlaveStateMachineShifter(void)
 
 
 					 if (request.RnW == READ){
-						if (dataReceived==1){
+						if (requestPending==1 && dataReceived==1){
 							requestPending=0;
 							retAckOk=1; // when data returned from master , write it on swdio to st-link
 						}
@@ -391,6 +391,7 @@ __attribute__((optimize("-Ofast"))) void Swd_SlaveStateMachineShifter(void)
 								{
 								requestPending=1;
 								sendNotif( REQUEST, rq,0,  &swSlave_TaskHandle ); // NOTE TO SELF: change later to run only once
+								dataReceived=0;
 
 								}
 						}

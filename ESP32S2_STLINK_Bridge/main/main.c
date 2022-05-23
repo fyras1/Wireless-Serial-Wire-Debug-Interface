@@ -21,7 +21,7 @@
 
 #define PORT 8001
 
-#define CONFIG_ESPNOW_CHANNEL				7
+#define CONFIG_ESPNOW_CHANNEL				12
 #define ESPNOW_WIFI_MODE 					WIFI_MODE_STA
 #define ESPNOW_WIFI_IF 						ESP_IF_WIFI_STA
 #define MAX_ESPNOW_PACKET_SIZE				250
@@ -91,7 +91,9 @@ static int s_retry_num = 0;
 uint8_t espnow_recv=0;
 
 esp_now_peer_info_t peer;
-static uint8_t peer_mac_addr[6] = { 0x7C, 0xDF, 0xA1, 0x54, 0x5C, 0x6C }; //BACLK BASE MAC: 7c:df:a1:54:5c:6c
+//static uint8_t peer_mac_addr[6] = { 0x7C, 0xDF, 0xA1, 0x54, 0x5C, 0x6C }; //BACLK BASE MAC: 7c:df:a1:54:5c:6c
+static uint8_t peer_mac_addr[6] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF }; //white base mac 7c:df:a1:51:08:dc
+
 
 
 void app_main(void){
@@ -189,7 +191,7 @@ static esp_err_t example_espnow_init(void)
 
     /* Initialize ESPNOW and register sending and receiving callback function. */
     ESP_ERROR_CHECK( esp_now_init() );
-    ESP_ERROR_CHECK( esp_now_register_send_cb(send_cb) );
+   // ESP_ERROR_CHECK( esp_now_register_send_cb(send_cb) );
     ESP_ERROR_CHECK( esp_now_register_recv_cb(recv_cb) );
 
     /* Add broadcast peer information to peer list. */
@@ -263,9 +265,13 @@ static void sendESPNOWData(void *pvParameter)
 		//ESP_LOGI(TAG,"sending now");
 		//gpio_set_level(DEBUG_PIN_1, 1);
 				//gpio_set_level(DEBUG_PIN_1, 0);
-		gpio_set_level(DEBUG_PIN_1, 1);
-		gpio_set_level(DEBUG_PIN_1, 0);
+
+		gpio_set_level(DEBUG_PIN_2, 1);
+			gpio_set_level(DEBUG_PIN_2, 0);
 		esp_now_send(send_param_var->dest_mac, txData, 9);
+		gpio_set_level(DEBUG_PIN_2, 1);
+			gpio_set_level(DEBUG_PIN_2, 0);
+
 	//	gpio_set_level(DEBUG_PIN_1, 1);
 			//	gpio_set_level(DEBUG_PIN_1, 0);
 
@@ -322,7 +328,8 @@ static void send_cb(const uint8_t *mac_addr, esp_now_send_status_t status)
 {
    // ESP_LOGI(TAG, "DATA send CB , status: %d", status);
 
-
+	gpio_set_level(DEBUG_PIN_1, 1);
+		gpio_set_level(DEBUG_PIN_1, 0);
 
 }
 
@@ -388,7 +395,7 @@ static void initWifi(void)
 {
     esp_err_t ret;
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
-	uint8_t cnt=0;
+    cfg.ampdu_tx_enable = 0;
 
 	//tcpip_adapter_init();
   //  ret = esp_event_loop_init(example_event_handler, NULL);
@@ -398,6 +405,9 @@ static void initWifi(void)
     ret = esp_wifi_start();
     ret = esp_wifi_set_channel(CONFIG_ESPNOW_CHANNEL, 0);
 	ret = esp_wifi_set_ps(WIFI_PS_NONE);
+	esp_wifi_internal_set_fix_rate(ESPNOW_WIFI_IF, 1, WIFI_PHY_RATE_MCS7_SGI);
+	esp_wifi_config_80211_tx_rate(ESPNOW_WIFI_IF, WIFI_PHY_RATE_MCS7_SGI);
+
 //	ret = esp_wifi_get_mac(ESPNOW_WIFI_IF, localMac);
 	ESP_LOGI(TAG,"\r\n[%d]\r\n", ret);
 	ESP_LOGI(TAG,"\r\nWIFI_MODE_STA MAC Address:\t");
@@ -407,7 +417,7 @@ static void initWifi(void)
 	printf(esp_err_to_name(ret));
 	printf("]\r\n");
 	printf("Setting High Spees Mode...[");
-	ret = esp_wifi_internal_set_fix_rate(ESPNOW_WIFI_IF, 1, WIFI_PHY_RATE_MCS7_SGI);
+
 	printf("%d]\r\n", ret);
 }
 

@@ -32,7 +32,7 @@
 
 //#include "main.h"
 
-#define CONFIG_ESPNOW_CHANNEL				7
+#define CONFIG_ESPNOW_CHANNEL				12
 #define ESPNOW_WIFI_MODE 					WIFI_MODE_STA
 #define ESPNOW_WIFI_IF 						ESP_IF_WIFI_STA
 #define MAX_ESPNOW_PACKET_SIZE				250
@@ -41,7 +41,9 @@ char* TAG="esp master:";
 esp_now_peer_info_t peer;
 example_espnow_send_param_t *send_param;
 
-static uint8_t peer_mac_addr[6] = { 0x7C, 0xDF, 0xA1, 0x51, 0x08, 0xDC }; //white base mac 7c:df:a1:51:08:dc
+//static uint8_t peer_mac_addr[6] = { 0x7C, 0xDF, 0xA1, 0x51, 0x08, 0xDC }; //white base mac 7c:df:a1:51:08:dc
+static uint8_t peer_mac_addr[6] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF }; //white base mac 7c:df:a1:51:08:dc
+
 
 
 example_espnow_send_param_t *send_param_var;
@@ -132,8 +134,9 @@ static void sendESPNOWData_Master(void *pvParameter)
 
 	while(1)
 	{
-		xTaskNotifyWait(0x00, 0xffffffff, NULL, portMAX_DELAY);
+		//xTaskNotifyWait(0x00, 0xffffffff, NULL, portMAX_DELAY);
 
+		if(received==1){
 		received=0;
 
 	 	   masterNotif.type=(notifTypeTypedef) tcpRxBuff[0];
@@ -161,6 +164,7 @@ static void sendESPNOWData_Master(void *pvParameter)
 			gpio_set_level(DEBUG_PIN_1, 1);
 			gpio_set_level(DEBUG_PIN_1, 0);
 		esp_now_send(send_param->dest_mac, tcpTxBuff, 9);
+		}
 	}
 }
 
@@ -171,7 +175,7 @@ static esp_err_t example_espnow_init(void)
 
     /* Initialize ESPNOW and register sending and receiving callback function. */
     ESP_ERROR_CHECK( esp_now_init() );
-    ESP_ERROR_CHECK( esp_now_register_send_cb(send_cb) );
+  //  ESP_ERROR_CHECK( esp_now_register_send_cb(send_cb) );
     ESP_ERROR_CHECK( esp_now_register_recv_cb(recv_cb) );
 
     /* Add broadcast peer information to peer list. */
@@ -244,11 +248,37 @@ static void recv_cb(const uint8_t *mac_addr, const uint8_t *data, int len)
 		    tcpRxBuff[i]=data[i];
 		}
 
-		BaseType_t xHigherPriorityTaskWoken=pdFALSE;
+		received=1;
 
-		xTaskNotifyFromISR(esp_now_task_handle,0,eNoAction,&xHigherPriorityTaskWoken);
-		portYIELD_FROM_ISR();
+	//	BaseType_t xHigherPriorityTaskWoken=pdFALSE;
 
+	//	xTaskNotifyFromISR(esp_now_task_handle,0,eNoAction,&xHigherPriorityTaskWoken);
+	//	portYIELD_FROM_ISR();
+		   masterNotif.type=(notifTypeTypedef) tcpRxBuff[0];
+
+			 	   masterNotif.value1=0;
+			 	   masterNotif.value2=0;
+
+			 	   masterNotif.value1=(tcpRxBuff[1]<<24) + (tcpRxBuff[2]<<16) +( tcpRxBuff[3]<<8) + (tcpRxBuff[4]);
+			 	   masterNotif.value2=(tcpRxBuff[5]<<24) + (tcpRxBuff[6]<<16) + (tcpRxBuff[7]<<8) + (tcpRxBuff[8]);
+
+			 	   master_func();
+
+					tcpTxBuff[0]=(uint8_t) slaveNotif.type;
+
+					tcpTxBuff[1]=(slaveNotif.value1>>24) & 0xFF;
+					tcpTxBuff[2]=(slaveNotif.value1>>16) & 0xFF;
+					tcpTxBuff[3]=(slaveNotif.value1>>8) & 0xFF;
+					tcpTxBuff[4]=(slaveNotif.value1>>0) & 0xFF;
+
+					tcpTxBuff[5]=(slaveNotif.value2>>24) & 0xFF;
+					tcpTxBuff[6]=(slaveNotif.value2>>16) & 0xFF;
+					tcpTxBuff[7]=(slaveNotif.value2>>8) & 0xFF;
+					tcpTxBuff[8]=(slaveNotif.value2>>0) & 0xFF;
+
+					gpio_set_level(DEBUG_PIN_1, 1);
+					gpio_set_level(DEBUG_PIN_1, 0);
+				esp_now_send(send_param->dest_mac, tcpTxBuff, 9);
 
 	    //vTaskDelay(1000 / portTICK_RATE_MS);
        // uart_write_bytes(uart_num, (const char*)rxData, 9);
@@ -259,18 +289,18 @@ static void recv_cb(const uint8_t *mac_addr, const uint8_t *data, int len)
 }
 
 /****************ESP ADD PEER************************/
-void add_peer()
-{
-
-    peer.channel = 1;
-    peer.ifidx = ESP_IF_WIFI_STA;
-    peer.encrypt = false;
-    for(int i=0;i<6;i++){
-    	peer.peer_addr[i]=peer_mac_addr[i];
-    }
-    esp_now_add_peer(&peer) ;
-
-}
+//void add_peer()
+//{
+//
+//    peer.channel = 1;
+//    peer.ifidx = ESP_IF_WIFI_STA;
+//    peer.encrypt = false;
+//    for(int i=0;i<6;i++){
+//    	peer.peer_addr[i]=peer_mac_addr[i];
+//    }
+//    esp_now_add_peer(&peer) ;
+//
+//}
 
 /************************WIFI INIT ESP NOW************************/
 
@@ -279,6 +309,7 @@ static void initWifi(void)
 {
     esp_err_t ret;
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+    cfg.ampdu_tx_enable = 0;
 	uint8_t cnt=0;
 
 	//tcpip_adapter_init();
@@ -289,6 +320,9 @@ static void initWifi(void)
     ret = esp_wifi_start();
     ret = esp_wifi_set_channel(CONFIG_ESPNOW_CHANNEL, 0);
 	ret = esp_wifi_set_ps(WIFI_PS_NONE);
+	ret = esp_wifi_internal_set_fix_rate(ESPNOW_WIFI_IF, 1, WIFI_PHY_RATE_MCS7_SGI);
+	esp_wifi_config_80211_tx_rate(ESPNOW_WIFI_IF, WIFI_PHY_RATE_MCS7_SGI);
+
 	//ret = esp_wifi_get_mac(ESPNOW_WIFI_IF, localMac);
 	printf("\r\n[%d]\r\n", ret);
 	printf("\r\nWIFI_MODE_STA MAC Address:\t");
@@ -298,7 +332,6 @@ static void initWifi(void)
 	printf(esp_err_to_name(ret));
 	printf("]\r\n");
 	printf("Setting High Spees Mode...[");
-	ret = esp_wifi_internal_set_fix_rate(ESPNOW_WIFI_IF, 1, WIFI_PHY_RATE_MCS7_SGI);
 	printf("%d]\r\n", ret);
 }
 
@@ -417,7 +450,7 @@ void gpio_init(void)
 	        io_conf.intr_type = GPIO_INTR_DISABLE;
 	        io_conf.mode = GPIO_MODE_OUTPUT;
 	        io_conf.pin_bit_mask = (1<<SWD_MASTER_DATA_Pin) ;
-	        io_conf.pull_down_en = 0; //changed from 1
+	        io_conf.pull_down_en = 1; //changed from 1
 	        io_conf.pull_up_en = 1; //changed from 0
 	        gpio_config(&io_conf);
 
