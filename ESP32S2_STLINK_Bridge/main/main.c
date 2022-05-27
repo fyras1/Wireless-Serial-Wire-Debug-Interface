@@ -91,8 +91,8 @@ static int s_retry_num = 0;
 uint8_t espnow_recv=0;
 
 esp_now_peer_info_t peer;
-//static uint8_t peer_mac_addr[6] = { 0x7C, 0xDF, 0xA1, 0x54, 0x5C, 0x6C }; //BACLK BASE MAC: 7c:df:a1:54:5c:6c
-static uint8_t peer_mac_addr[6] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF }; //white base mac 7c:df:a1:51:08:dc
+static uint8_t peer_mac_addr[6] = { 0x7C, 0xDF, 0xA1, 0x54, 0x5C, 0x6C }; //BACLK BASE MAC: 7c:df:a1:54:5c:6c
+//static uint8_t peer_mac_addr[6] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF }; //white base mac 7c:df:a1:51:08:dc
 
 
 

@@ -41,8 +41,8 @@ char* TAG="esp master:";
 esp_now_peer_info_t peer;
 example_espnow_send_param_t *send_param;
 
-//static uint8_t peer_mac_addr[6] = { 0x7C, 0xDF, 0xA1, 0x51, 0x08, 0xDC }; //white base mac 7c:df:a1:51:08:dc
-static uint8_t peer_mac_addr[6] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF }; //white base mac 7c:df:a1:51:08:dc
+static uint8_t peer_mac_addr[6] = { 0x7C, 0xDF, 0xA1, 0x51, 0x08, 0xDC }; //white base mac 7c:df:a1:51:08:dc
+//static uint8_t peer_mac_addr[6] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF }; //white base mac 7c:df:a1:51:08:dc
 
 
 
