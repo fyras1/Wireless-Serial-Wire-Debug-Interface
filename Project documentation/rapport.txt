@@ -1,0 +1,1 @@
+this work serves as a proof of concept of a wireless interface for the Serial Wire Debug protocol.
