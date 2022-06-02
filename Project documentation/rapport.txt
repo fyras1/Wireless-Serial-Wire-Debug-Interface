@@ -1,1 +1,56 @@
-this work serves as a proof of concept of a wireless interface for the Serial Wire Debug protocol.
+
+
+Abstract? 
+this work serves as a proof of concept of a wireless interface for the Serial Wire Debug protocol. This interface allows users to program and debug microcrollers that are not accessible through wired interfaces.
+ 
+This study will be followed by an establishment of a detailed technical structure of the solution and finally the implementation of all the intermediary steps.
+
+Keywords: STM32, ESP32, UART, SWD, ARM, Wi-Fi,TCP ...
+
+
+
+
+General Introduction
+
+The microcontroller has played a fundamental role in the technological revolution that has shaped modern life. Microcontrollers are small, versatile, inexpensive devices that can be successfully implemented and programmed to achieve a particular purpose.  but it can be truly frustrating when it doesn’t function as expected. You can trace most issues back to one of two things: a failure to understand a specific MCU feature, or a mistake in the code. It is in such situations that the ability to "look inside" the device would be very helpful. Today’s MCUs typically offer integrated debugging interfaces that allow them to be programmed (flashed) and debugged.
+
+Projects involving microcontrollers can be so complex, and they require of their developers to be able to constantly observe the workflow of the program and the state of its varibales. because of that, there exists tools that facilate the communication with embedded devices. such tools are called debug probes, their role is to interface between a computer and a microcontroller and to serve as a wired bridge between the two different architectures.
+
+when the targer microcontroller is integrated inside a mobile device(eg: e-bike, drone, car) it's 
+
+Some projects 
+
+
+
+Mobility
+ the debug interface can also be used, if there is movement between the development PC and the target system. This is particularly useful in robotic applications
+
+Safety
+In specific use cases, where the target system operates inside a hazardous environment, the wireless connection enables the developer to stay outside the dangerous area with his development system, even if there is a physical barrier between development and target system.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
