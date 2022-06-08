@@ -16,9 +16,140 @@ The microcontroller has played a fundamental role in the technological revolutio
 
 Projects involving microcontrollers can be so complex, and they require of their developers to be able to constantly observe the workflow of the program and the state of its varibales. because of that, there exists tools that facilate the communication with embedded devices. such tools are called debug probes, their role is to interface between a computer and a microcontroller and to serve as a wired bridge between the two different architectures.
 
-when the targer microcontroller is integrated inside a mobile device(eg: e-bike, drone, car) it's 
+Firmware can be updated and debugged using physical links if there are specific physical connectors on the device. But physical access is not always possible, either because of the distance between the PC and the firmware or because the firmware is in a moving object(eg: drone, e-bike..). 
+, our project aims to study and develop a wireless debugging interface, a solution that can overcome the necessity of a wired connection. 
 
-Some projects 
+With the increasing growth of the mobility industry and the exapanding demand for microcontrollers inside vehicles, it became apparent that using physical connections to communicate with these devices can be problematic and inefficient. 
+As a solution, we suggest a wireless debug interface that enables developers  to program and debug mobile devices without the need of physically connecting the computer to the target device.
+
+This report summarizes and presents the different stages of the project’s life cycle. It is organised ad follows:
+
+In the first chapter, "Project context", we will present the host company and give an overview of the project and the problematic behind it. The next chapter "Debugging" will start with the explaining basic debugging concepts as well as the software and hardware tools that enables us to program and debug microcontrollers. The third chapter "design and architecture" will describe the proposed solution and the general architecture of the project. then we move to the fourth chapter, realisation, where we will discuss implementation details and the encountered difficulties throughout the realisation.
+
+
+
+
+*******************************************************************************************
+I) Chapter I: Project context
+
+***************************************
+Introduction
+
+This first chapter aims to define the general context of the project, by introducing the
+host organization, its functional structure and its activity sectors. This chapter will also
+explore the needs driving the development of this project as well as the methodology
+adopted during its implementation.
+
+**************************************
+1 Host company presentation
+
+In this Section, we will present the host company and then give a description of its activity sector.
+
+1.2 Presentation of ACTIA group
+The ACTIA Group is a medium-sized, family-owned company with its headquarters in head office is located in France. This family character of the Group, since its creation in 1986,has played an important role in what ACTIA is today and what it will be tomorrow.
+It guarantees the Group's long-term future and its independence in a constantly renewed entrepreneurial dynamic.
+ACTIA was created in 1986 by Mr. CALMELS, Mr. CHABRERIE and Mr. PECH in Toulouse. 
+One of the first products marketed by this company was an electronic diagnostic equipment, the first of its kind. This group is a merger with the company Electroniques Manufacturing and the company Sodie-lec, a company specialized in satellite telecommunications. 
+Today, the ACTIA Group has 22 locations in 16 countries (figure 1.1) and this international dimension is an integral part of the group's identity in the same way as its pioneering spirit and industrial culture.
+
+[1]. Figure 1.1 shows the location of the ACTIA Group in various countries.
+
+****************************************
+1.2 ACTIA ES
+
+ARDIA is an engineering company located in the Technopôle Ghazala in Arianna.
+ARDIA represents the acronym of ACTIA Group Research and Development in Applied Computing,
+was created in July 2005.
+In 2019 the name of the company's name became ACTIA Engineering Services, it constitutes a very important subsidiary located in the North African territory. 
+ACTIA and its subsidiaries are specialized in automotive diagnostics, on-board electronics and telecommuni-cations.
+
+ACTIA ES has a strong experience of projects carried out in an international context.
+
+Since its creation, ACTIA ES supports its customers in the development and integration of
+of embedded electronics and communicating software or associated software packages.
+
+ACTIA ES has developed a real know-how for :
+ The development of embedded software or PCs;
+ Mechanical and electronic studies;
+ Test and validation of complex systems;
+ Equipment services.
+
+ACTIA ES has set up an efficient and constantly improving quality system, as well as a proven methodology and expertise in project management based on the best practices and
+from the best practices and standards of the software industry.
+ACTIA ES is certified ISO 9001 version 2008 for all its design activities, development, test and validation, diagnostic tools, mechanical systems, production tools for production tools for automotive applications, industrial support and quality testing.
+
+
+*****************************************************
+1.3 Activity sectors
+
+ * Automotive and transportation
+With 10 years of experience in the automotive sector, ACTIA ES is involved in projects with high added value. Working on complete and diversified projects (embedded software, application software, operating security, mechatronics development,. . .). 
+Its experience and know-how in the automotive and transportation sectors, developed during these ten years, have enabled it to extend its interventions to other fields of activity such as the aeronautics sector, which uses the same skills and know-how.
+ 
+* Information technology
+With increased competition, creativity is becoming essential to survive in this
+industry. ACTIA ES helps its customers to develop sustainable and profitable applications
+by offering solutions adapted to new technologies and advanced in full life cycle.
+lifecycle solutions.
+ 
+* Industry
+
+ACTIA ES takes on projects for the design and integration of various electronic and mechanical
+electronic and mechanical products. Its teams work on diversified projects with
+value-added projects.
+Its manufacturing, service and functional test teams work together to
+to meet the needs of its partners in terms of production tools. 
+Downstream of its value chain, its laboratory team also performs quality testing of various
+of various industrial equipment.
+ 
+*Multimedia and telecommunication
+
+ACTIA ES is involved in the development of short life cycle applications, connected objects and smartphones.
+As a software solution provider, ACTIA ES has the necessary skills to develop customized applications for its partners.
+
+
+************************************************************************
+2) Project Scope
+This section is a general presentation of the project scope. It will start by its context and
+key motives, followed by problem statement and ending with the project goal.
+
+**********************
+2.1 General context
+-What embedded systems are and how they play a key component in our everyday life. 
+-embedded software needs to be debugged.
+-what exactly is debugging? why is it so essential?
+-standard debugging methods and tools 
+-wired debugging and its limitations 
+-Finally the problem we're trying to solve 
+-existing solutions(j-link wireless $$$$)
+-our solution.
+
+
+
+Translated with www.DeepL.com/Translator (free version)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+presentation of the current method of debuggin and the envisioned final product.
+
+
+
+
+
+ 
 
 
 
@@ -27,6 +158,48 @@ Mobility
 
 Safety
 In specific use cases, where the target system operates inside a hazardous environment, the wireless connection enables the developer to stay outside the dangerous area with his development system, even if there is a physical barrier between development and target system.
+
+chapter 2: theoretical definitions 
+
+In this chapter we are going to introduce a multitude of concepts that will be frequently used in the next chapter to explain the implementation process of our solution. The most important concept that we will be explaining is the SWD protocol since it is the backbone of our project. 
+
+-swd ..
+-
+
+
+
+Chapter 3: project architecture and implementation phases 
+
+In this chapter we will explain in detail the architecture of our project and dive into the implementation of every step of the wireles debugging chain which will be explained in the next section. 
+
+General Architecture: 
+
+The general idea of our project is to have an st-link connected to a pc via usb which is then connected to an MCU we'll call master which will decode the SWD frames and send them wirelessly to another MCU we'll call slave which will interact with our target mcu and back 
+
+Development phases: 
+phase 1: understanding the protocol using logic analyzer 
+phase 2: wired bridge 
+phase 3: implementing the wireless protocol using ESP32 
+phase 4: removing the bridge and porting the code to ESP32 
+Chapter 4: benchmarking and future improvements 
+
+the results reached are relatively slow compared to commercial solutions but they serve as a proof of concept that such results can be realised and improved upon to reach a fast solution that can be commercialised 
+
+-the speeds reached 
+-how much time it took to flash a x sized file 
+-working with cube ide (inserting breakpoints, livewatches etc...)
+-maximum distance
+-moving target etc...
+future improvements: 
+-we can work on improving the wireless send time which will involve getting more aquainted with the inner workings of the wireless transport layer implemented by espressif.
+-we can replace the st-link entirely with an MCU that will interface via usb with the pc and simply send the data wirelessly (this was not done in the scope of this project because it requires expert level familiarity with the USB protocol and classes which as an intern i do not have)
+
+
+conclusion 
+projet zabbour, w t3allamt barcha 7ajet w yedkom fi zebi.
+
+
+
 
 
 

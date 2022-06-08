@@ -36,6 +36,7 @@ void vCommontask_StartApk(void );
 	 uint32_t value2;
  } notificationStruct;
 
+
  extern notificationStruct slaveNotif,masterNotif;
 
 
